@@ -1,0 +1,5 @@
+*.pyc
+toolsdev
+xrd/simulation
+xrd/gui
+xrd/viewer.py
