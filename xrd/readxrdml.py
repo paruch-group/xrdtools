@@ -9,7 +9,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def txt_list2arr(txt):
+def _txt_list2arr(txt):
     """Split a list of numbers into an array
     """
     if txt is None:
@@ -17,7 +17,7 @@ def txt_list2arr(txt):
     return np.fromstring(txt, dtype=float, count=-1, sep=' ')
 
 
-def get_array_for_single_value(data, key):
+def _get_array_for_single_value(data, key):
     if not key in data:
         return data
     if data[key].size == 1:
@@ -27,11 +27,143 @@ def get_array_for_single_value(data, key):
     return data
 
 
+def _sort_data(k, uid_scans, data):
+    scan = _get_scan(uid_scans, k)
+    if scan:
+        if data['measType'] == 'Scan' or scan['status'] == 'Completed':
+            data['scannb'].append(k)
+            for key in ['data', 'time', '2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
+                data = _append2arr(data, scan, key)
+        else:  # TODO: check if this code actually works?!
+            data['iscannb'].append(k)
+            data['idata'].append(scan['data'])
+            data['itime'].append(scan['time'])
+            data['i2Theta'].append(scan['2Theta'])
+            data['iOmega'].append(scan['Omega'])
+            if 'Phi' in scan.keys():
+                data['iPhi'].append(scan['Phi'])
+            if 'Psi' in scan.keys():
+                data['iPsi'].append(scan['Psi'])
+            if 'X' in scan.keys():
+                data['iX'].append(scan['X'])
+            if 'Y' in scan.keys():
+                data['iY'].append(scan['Y'])
+            if 'Z' in scan.keys():
+                data['iZ'].append(scan['Z'])
+    return data
+
+
+def _append2arr(data, scan, key):
+    if not data[key]:
+        data[key] = scan[key]
+    else:
+        data[key] = np.vstack((data[key], scan[key]))
+    return data
+
+
+def _get_scan(uid_scans, scannb):
+    """ Extract scan data
+    """
+    scan_data = {}
+    # here should be some input checks
+
+    #    # find the scan in the tree
+    #    xpath_scan = 'xrdMeasurement/scan'+'['+str(scannb)+']'
+    #    uid_scan = tree.find(xpath_scan)
+    #    if not uid_scan:
+    #        print 'Can not find a specified scan.'
+    #        return []
+
+    # get correct scan
+    uid_scan = uid_scans[scannb]
+
+    # get the scan status
+    scan_data['status'] = uid_scan.get('status')
+
+    # get the scan axis type
+    scan_data['scanAxis'] = uid_scan.get('scanAxis')
+
+    # get intensities
+    scan_data['data'] = _txt_list2arr(uid_scan.findtext('dataPoints/intensities'))
+    units_intensities = uid_scan.find('dataPoints/intensities').get('unit')
+
+    # get counting time
+    scan_mode = uid_scan.get('mode')
+    if scan_mode == 'Pre-set counts':
+        time = uid_scan.findtext('dataPoints/countingTimes')
+    else:
+        time = uid_scan.findtext('dataPoints/commonCountingTime')
+    scan_data['time'] = _txt_list2arr(time)
+
+    # normalize intensity units to cps
+    if units_intensities == 'counts':
+        scan_data['data'] /= scan_data['time']
+
+    # get the position of all axes
+    xpath = 'dataPoints/positions'
+    uid_pos = uid_scan.findall(xpath)
+    n = len(scan_data['data'])  # nb of data points
+    for pos in uid_pos:
+        info = _read_axis_info(pos, n)
+        if info['axis'] == '2Theta':
+            scan_data['2Theta'] = info['data']
+        elif info['axis'] == 'Omega':
+            scan_data['Omega'] = info['data']
+        elif info['axis'] == 'Phi':
+            scan_data['Phi'] = info['data']
+        elif info['axis'] == 'Psi':
+            scan_data['Psi'] = info['data']
+        elif info['axis'] == 'X':
+            scan_data['X'] = info['data']
+        elif info['axis'] == 'Y':
+            scan_data['Y'] = info['data']
+        elif info['axis'] == 'Z':
+            scan_data['Z'] = info['data']
+        else:
+            print 'axis type not supported'
+    return scan_data
+
+
+def _read_axis_info(uid_pos, n):
+    info = {'axis': uid_pos.get('axis'), 'unit': uid_pos.get('unit')}
+    unspaced = True
+    isarray = True
+    uid_child = list(uid_pos)
+    for child in uid_child:
+        if child.tag == 'listPositions':
+            info['data'] = _txt_list2arr(uid_pos.findtext('listPositions'))
+            unspaced = False
+        elif child.tag in ['startPosition', 'endPosition', 'commonPosition']:
+            if 'data' not in info.keys():
+                info['data'] = np.zeros(2)
+            if child.tag == 'startPosition':
+                info['data'][0] = np.double(uid_pos.findtext('startPosition'))
+            elif child.tag == 'endPosition':
+                info['data'][1] = np.double(uid_pos.findtext('endPosition'))
+            elif child.tag == 'commonPosition':
+                info['data'] = np.asarray(np.double(uid_pos.findtext('commonPosition')))
+                isarray = False
+        else:
+            logger.debug('unsupported tag')
+            info['data'] = np.array([])
+
+    if unspaced and ('n' in locals()) and n and isarray:
+        info['data'] = np.linspace(info['data'][0], info['data'][1], n)
+
+    if not unspaced and ('n' in locals()) and n and len(info['data']) != n:
+        logger.debug('Different numbers of axis positions and data points')
+    return info
+
+
 def read_file(filename):
-    """Load a Panalytical XRDML file"""
+    """Load a Panalytical XRDML file
+
+    :param str filename: The filename of the xrdml file to be loaded.
+    :return dict: The function returns a dictionary with all relevant data.
+    """
 
     if not os.path.exists(filename):
-        logger.error('File "{}" does not excist.'.format(filename))
+        logger.error('File "{}" does not exist.'.format(filename))
         raise ValueError('This is not a valid filename.')
 
     path, basename = os.path.split(filename)
@@ -95,12 +227,12 @@ def read_file(filename):
         data[key] = []
 
     for k in range(nb_scans):
-        scan = get_scan(uid_scans, k)
+        scan = _get_scan(uid_scans, k)
         if scan:
             if data['measType'] == 'Scan' or scan['status'] == 'Completed':
                 data['scannb'].append(k)
                 for key in ['data', 'time', '2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
-                    data = append2arr(data, scan, key)
+                    data = _append2arr(data, scan, key)
             else:  # (TODO: check if this code actually works?!)
                 data['iscannb'].append(k)
                 data['idata'].append(scan['data'])
@@ -161,15 +293,15 @@ def read_file(filename):
         [data.pop(key) for key in ['iscannb', 'idata', 'itime', 'i2Theta', 'iOmega',
                                    'iPhi', 'iPsi', 'iX', 'iY', 'iZ']]
 
-    data = get_array_for_single_value(data, 'time')
+    data = _get_array_for_single_value(data, 'time')
 
     if data['measType'] != 'Area measurement':
-        data = get_array_for_single_value(data, '2Theta')
-        data = get_array_for_single_value(data, 'Omega')
+        data = _get_array_for_single_value(data, '2Theta')
+        data = _get_array_for_single_value(data, 'Omega')
 
     if nb_scans > 1:
         for key in ['Phi', 'Psi', 'X', 'Y', 'Z']:
-            data = get_array_for_single_value(data, key)
+            data = _get_array_for_single_value(data, key)
 
     # in case of 'Repeated scan' sum all completed scans together and
     # remove redundant data
@@ -180,7 +312,7 @@ def read_file(filename):
         data['data'] = data['data'][0] / len(data['scannb'])
         # reduce all possible axis
         for key in ['2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
-            data = get_array_for_single_value(data, key)
+            data = _get_array_for_single_value(data, key)
         # set true time
         data['time'] *= len(data['scannb'])
         # remove redundant information about scan number
@@ -304,134 +436,6 @@ def read_file(filename):
         data['slitHeight'] = np.double(xrdm.findtext(xpath))
 
     return data
-
-
-def sort_data(k, uid_scans, data):
-    scan = get_scan(uid_scans, k)
-    if scan:
-        if data['measType'] == 'Scan' or scan['status'] == 'Completed':
-            data['scannb'].append(k)
-            for key in ['data', 'time', '2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
-                data = append2arr(data, scan, key)
-        else:  # TODO: check if this code actually works?!
-            data['iscannb'].append(k)
-            data['idata'].append(scan['data'])
-            data['itime'].append(scan['time'])
-            data['i2Theta'].append(scan['2Theta'])
-            data['iOmega'].append(scan['Omega'])
-            if 'Phi' in scan.keys():
-                data['iPhi'].append(scan['Phi'])
-            if 'Psi' in scan.keys():
-                data['iPsi'].append(scan['Psi'])
-            if 'X' in scan.keys():
-                data['iX'].append(scan['X'])
-            if 'Y' in scan.keys():
-                data['iY'].append(scan['Y'])
-            if 'Z' in scan.keys():
-                data['iZ'].append(scan['Z'])
-    return data
-
-
-def append2arr(data, scan, key):
-    if not data[key]:
-        data[key] = scan[key]
-    else:
-        data[key] = np.vstack((data[key], scan[key]))
-    return data
-
-
-def get_scan(uid_scans, scannb):
-    """ Extract scan data
-    """
-    scan_data = {}
-    # here should be some input checks
-
-    #    # find the scan in the tree
-    #    xpath_scan = 'xrdMeasurement/scan'+'['+str(scannb)+']'
-    #    uid_scan = tree.find(xpath_scan)
-    #    if not uid_scan:
-    #        print 'Can not find a specified scan.'
-    #        return []
-
-    # get correct scan
-    uid_scan = uid_scans[scannb]
-
-    # get the scan status
-    scan_data['status'] = uid_scan.get('status')
-
-    # get the scan axis type
-    scan_data['scanAxis'] = uid_scan.get('scanAxis')
-
-    # get intensities
-    scan_data['data'] = txt_list2arr(uid_scan.findtext('dataPoints/intensities'))
-    units_intensities = uid_scan.find('dataPoints/intensities').get('unit')
-
-    # get counting time
-    scan_mode = uid_scan.get('mode')
-    if scan_mode == 'Pre-set counts':
-        time = uid_scan.findtext('dataPoints/countingTimes')
-    else:
-        time = uid_scan.findtext('dataPoints/commonCountingTime')
-    scan_data['time'] = txt_list2arr(time)
-
-    # normalize intensity units to cps
-    if units_intensities == 'counts':
-        scan_data['data'] /= scan_data['time']
-
-    # get the position of all axes
-    xpath = 'dataPoints/positions'
-    uid_pos = uid_scan.findall(xpath)
-    n = len(scan_data['data'])  # nb of data points
-    for pos in uid_pos:
-        info = read_axis_info(pos, n)
-        if info['axis'] == '2Theta':
-            scan_data['2Theta'] = info['data']
-        elif info['axis'] == 'Omega':
-            scan_data['Omega'] = info['data']
-        elif info['axis'] == 'Phi':
-            scan_data['Phi'] = info['data']
-        elif info['axis'] == 'Psi':
-            scan_data['Psi'] = info['data']
-        elif info['axis'] == 'X':
-            scan_data['X'] = info['data']
-        elif info['axis'] == 'Y':
-            scan_data['Y'] = info['data']
-        elif info['axis'] == 'Z':
-            scan_data['Z'] = info['data']
-        else:
-            print 'axis type not supported'
-    return scan_data
-
-
-def read_axis_info(uid_pos, n):
-    info = {'axis': uid_pos.get('axis'), 'unit': uid_pos.get('unit')}
-    unspaced = True
-    isarray = True
-    uid_child = list(uid_pos)
-    for child in uid_child:
-        if child.tag == 'listPositions':
-            info['data'] = txt_list2arr(uid_pos.findtext('listPositions'))
-            unspaced = False
-        elif child.tag in ['startPosition', 'endPosition', 'commonPosition']:
-            if 'data' not in info.keys():
-                info['data'] = np.zeros(2)
-            if child.tag == 'startPosition':
-                info['data'][0] = np.double(uid_pos.findtext('startPosition'))
-            elif child.tag == 'endPosition':
-                info['data'][1] = np.double(uid_pos.findtext('endPosition'))
-            elif child.tag == 'commonPosition':
-                info['data'] = np.asarray(np.double(uid_pos.findtext('commonPosition')))
-                isarray = False
-        else:
-            logger.debug('unsupported tag')
-            info['data'] = np.array([])
-
-    if unspaced and ('n' in locals()) and n and isarray:
-        info['data'] = np.linspace(info['data'][0], info['data'][1], n)
-
-    if not unspaced and ('n' in locals()) and n and len(info['data']) != n:
-        logger.debug('Different numbers of axis positions and data points')
-    return info
 
 
 if __name__ == '__main__':

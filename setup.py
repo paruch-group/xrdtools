@@ -6,12 +6,10 @@ from distutils.core import setup, Extension
 from distutils.sysconfig import get_python_lib
 from os.path import join
 
-from xrd import __version__
+from xrd import __version__, __name__ as package_name
 
-package_name = 'xrd'
 
 numpydir = join(get_python_lib(plat_specific=1), 'numpy')
-
 
 setup(name=package_name,
       version=__version__,
