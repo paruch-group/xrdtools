@@ -1,68 +1,53 @@
 import os
 import string
+import logging
 
 from lxml.etree import parse, tostring, XML
 import numpy as np
 
 
-globprint = 0
+logger = logging.getLogger(__name__)
 
 
-def printif(variable, string='output: '):
-    """ This function allows to print variables if globprint == 1 """
-    if globprint == 1:
-        print string, variable
-
-
-def txtlist2arr(string):
-    """split a list of numbers into an array"""
-    if string is None:
+def txt_list2arr(txt):
+    """Split a list of numbers into an array
+    """
+    if txt is None:
         return np.asarray([])
-    dat = np.fromstring(string, dtype=float, count=-1, sep=' ')
-    return dat
+    return np.fromstring(txt, dtype=float, count=-1, sep=' ')
+
+
+def get_array_for_single_value(data, key):
+    if not key in data:
+        return data
+    if data[key].size == 1:
+        data[key] = np.ones_like(data['data']) * data[key]
+    elif np.all(data[key] == data[key][0]):
+        data[key] = data[key][0]
+    return data
 
 
 def read_file(filename):
-    """ procedure to open Panalytical XRDML files """
-
-    # check file
-    if filename == '':
-        print('no input specified')
-        return {}
-    #        raise NameError('no input specified')
+    """Load a Panalytical XRDML file"""
 
     if not os.path.exists(filename):
+        logger.error('File "{}" does not excist.'.format(filename))
         raise ValueError('This is not a valid filename.')
 
     path, basename = os.path.split(filename)
-    filebase, fileext = os.path.splitext(basename)
+    file_base, file_ext = os.path.splitext(basename)
 
-    if fileext == '':
-        filename = filebase + '.xrdml'
+    if file_ext == '':
+        filename = file_base + '.xrdml'
 
     tree = parse(os.path.join(path, filename)).getroot()
-    treestr = tostring(tree)
-    treestr = string.replace(treestr, ' xmlns=', ' xmlnamespace=')
+    treestr = string.replace(tostring(tree), ' xmlns=', ' xmlnamespace=')
     xrdm = XML(treestr)
 
     data = {'filename': filename,
             'sample': xrdm.findtext('sample/id'),
             'status': xrdm.get('status'),
             'comment': {}}
-
-    # get all sample infos
-    #    data['sample'] = {}
-    #    try: data['sample']['type'] = xrdm.find('sample').get('type')
-    #    except: data['sample']['type'] = ''
-    #    xpath = 'sample/id'
-    #    try: data['sample']['id'] = xrdm.findtext(xpath)
-    #    except: data['sample']['id'] = ''
-    #    xpath = 'sample/name'
-    #    try: data['sample']['name'] = xrdm.findtext(xpath)
-    #    except: data['sample']['name'] = ''
-    #    xpath = 'sample/preparedBy'
-    #    try: data['sample']['preparedBy'] = xrdm.findtext(xpath)
-    #    except: data['sample']['preparedBy'] = ''
 
     # get comment (reads ONLY the first comment, NEEDS improvement)
     xpath = 'comment/entry'
@@ -81,7 +66,7 @@ def read_file(filename):
         xpath = 'xrdMeasurement/scan[1]/reflection'
         data['substrate'] = xrdm.findtext(xpath + '/material')
         data['hkl'] = {}
-        if xrdm.findall(xpath) != []:
+        if xrdm.findall(xpath):
             xpath_h = xpath + '/hkl/h'
             data['hkl']['h'] = int(xrdm.findtext(xpath_h))
             xpath_k = xpath + '/hkl/k'
@@ -110,7 +95,7 @@ def read_file(filename):
         data[key] = []
 
     for k in range(nb_scans):
-        scan = getScan(uid_scans, k)
+        scan = get_scan(uid_scans, k)
         if scan:
             if data['measType'] == 'Scan' or scan['status'] == 'Completed':
                 data['scannb'].append(k)
@@ -136,8 +121,8 @@ def read_file(filename):
     # if we have only one incomplete scan, the scan is considered to be
     # completed and is moved to completed scans list
     if not data['scannb'] and len(data['iscannb']) == 1:
-        print '''one and only incomplete scan found in the data,
-        the scan considered as completed'''
+        logger.debug('One and only incomplete scan found in the data. This scan is considered complete.')
+
         for key, ikey in zip(['scannb', 'data', 'time', '2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z'],
                              ['iscannb', 'idata', 'itime', 'i2Theta', 'iOmega', 'iPhi', 'iPsi', 'iX', 'iY', 'iZ']):
             if ikey in data.keys() and data[ikey]:
@@ -171,34 +156,20 @@ def read_file(filename):
                 #            data['iZ'] = []
 
     # remove redundant information
-    for key in ['Phi', 'Psi', 'X', 'Y', 'Z']:
-        if data[key] == []:
-            data.pop(key)
+    [data.pop(key) for key in ['Phi', 'Psi', 'X', 'Y', 'Z'] if not data[key]]
     if not data['iscannb']:
-        for key in ['iscannb', 'idata', 'itime', 'i2Theta', 'iOmega',
-                    'iPhi', 'iPsi', 'iX', 'iY', 'iZ']:
-            data.pop(key)
+        [data.pop(key) for key in ['iscannb', 'idata', 'itime', 'i2Theta', 'iOmega',
+                                   'iPhi', 'iPsi', 'iX', 'iY', 'iZ']]
 
-    if np.all(data['time'] == data['time'][0]):
-        data['time'] = data['time'][0]
+    data = get_array_for_single_value(data, 'time')
 
     if data['measType'] != 'Area measurement':
-        if np.all(data['2Theta'] == data['2Theta'][0]):
-            data['2Theta'] = data['2Theta'][0]
-        if np.all(data['Omega'] == data['Omega'][0]):
-            data['Omega'] = data['Omega'][0]
+        data = get_array_for_single_value(data, '2Theta')
+        data = get_array_for_single_value(data, 'Omega')
 
     if nb_scans > 1:
-        if 'Phi' in data.keys() and np.all(data['Phi'] == data['Phi'][0]):
-            data['Phi'] = data['Phi'][0]
-        if 'Psi' in data.keys() and np.all(data['Psi'] == data['Psi'][0]):
-            data['Psi'] = data['Psi'][0]
-        if 'X' in data.keys() and np.all(data['X'] == data['X'][0]):
-            data['X'] = data['X'][0]
-        if 'Y' in data.keys() and np.all(data['Y'] == data['Y'][0]):
-            data['Y'] = data['Y'][0]
-        if 'Z' in data.keys() and np.all(data['Z'] == data['Z'][0]):
-            data['Z'] = data['Z'][0]
+        for key in ['Phi', 'Psi', 'X', 'Y', 'Z']:
+            data = get_array_for_single_value(data, key)
 
     # in case of 'Repeated scan' sum all completed scans together and
     # remove redundant data
@@ -209,11 +180,10 @@ def read_file(filename):
         data['data'] = data['data'][0] / len(data['scannb'])
         # reduce all possible axis
         for key in ['2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
-            if key in data.keys() and np.all(data[key][:] == data[key][0]):
-                data[key] = data[key][0]
+            data = get_array_for_single_value(data, key)
         # set true time
         data['time'] *= len(data['scannb'])
-        # remove redundant infromation about scan number
+        # remove redundant information about scan number
         data.pop('scannb')
 
     # get wavelength
@@ -257,12 +227,12 @@ def read_file(filename):
                 if data['measType'] in ['Scan', 'Repeated scan']:
                     data['x'] = data['Omega']
             elif data['scanAxis'] in ['Phi', 'Psi', 'X', 'Y', 'Z']:
-                axisTpye = data['scanAxis']
+                axisType = data['scanAxis']
                 data['xlable'] = data['scanAxis']
                 if data['measType'] == 'Scan':
                     data['x'] = data[data['scanAxis']]
             else:
-                print('scanAxis type is not supported')
+                logger.debug('The scanAxis type is not supported')
                 axisType = 'unknown'
                 data['xlabel'] = 'unknown'
 
@@ -274,7 +244,6 @@ def read_file(filename):
                     data['xunit'] = pos.get('unit')
                     break
             if 'xunit' not in data.keys():
-                #print('xunit value not assigned')
                 data['xunit'] = 'nd'
 
         if 'stepAxis' in data.keys():
@@ -295,7 +264,7 @@ def read_file(filename):
                 axisType = 'unknown'
                 data['ylabel'] = 'unknown'
 
-            # (TODO: maybe optimization possible, load units before)
+            # TODO: maybe optimization possible, load units before
             xpath = 'xrdMeasurement/scan[1]/dataPoints/positions'
             uid = xrdm.find(xpath)
             for pos in uid:
@@ -303,19 +272,18 @@ def read_file(filename):
                     data['yunit'] = pos.get('unit')
                     break
             if 'yunit' not in data.keys():
-                print('yunit value is not assigned')
                 data['yunit'] = 'nd'
 
     if data['measType'] == 'Area measurement':
         # TODO: check if omega is same dimensions as 2theta, otherwise correct it
-        dim2T = data['2Theta'].shape
-        dimO = data['Omega'].shape
-        if dim2T[1] != dimO[1] and data['scanAxis'] == '2Theta' and data['stepAxis'] == 'Omega':
+        dim_2t = data['2Theta'].shape
+        dim_o = data['Omega'].shape
+        if dim_2t[1] != dim_o[1] and data['scanAxis'] == '2Theta' and data['stepAxis'] == 'Omega':
             tmp = np.empty_like(data['2Theta'])
-            for k in range(dim2T[1]):
+            for k in range(dim_2t[1]):
                 tmp[:, k] = data['Omega'].T
             data['Omega'] = tmp
-            print('Omega array was corrected to match 2Theta and data arrays')
+            logger.debug('Omega array was corrected to match "2Theta" and "data" arrays')
 
     # Mask Width [OPTIONAL]
     xpath = 'xrdMeasurement/incidentBeamPath/mask/width'
@@ -323,7 +291,7 @@ def read_file(filename):
     if uid is not None:
         unit = uid.get('unit')
         if unit != 'mm':
-            print('Mask Width units are not \'mm\'')
+            logger.debug('Mask width units are not \'mm\'')
         data['maskWidth'] = np.double(xrdm.findtext(xpath))
 
     # Divergence slit Height [OPTIONAL]
@@ -332,20 +300,20 @@ def read_file(filename):
     if uid is not None:
         unit = uid.get('unit')
         if unit != 'mm':
-            print('Divergence slit Height units are not \'mm\'')
+            logger.debug('Divergence slit height units are not \'mm\'')
         data['slitHeight'] = np.double(xrdm.findtext(xpath))
 
     return data
 
 
-def sortdata(k, uid_scans, data):
-    scan = getScan(uid_scans, k)
+def sort_data(k, uid_scans, data):
+    scan = get_scan(uid_scans, k)
     if scan:
         if data['measType'] == 'Scan' or scan['status'] == 'Completed':
             data['scannb'].append(k)
             for key in ['data', 'time', '2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
                 data = append2arr(data, scan, key)
-        else:  # (TODO: check if this code actually works?!)
+        else:  # TODO: check if this code actually works?!
             data['iscannb'].append(k)
             data['idata'].append(scan['data'])
             data['itime'].append(scan['time'])
@@ -365,14 +333,14 @@ def sortdata(k, uid_scans, data):
 
 
 def append2arr(data, scan, key):
-    if data[key] == []:
+    if not data[key]:
         data[key] = scan[key]
     else:
         data[key] = np.vstack((data[key], scan[key]))
     return data
 
 
-def getScan(uid_scans, scannb):
+def get_scan(uid_scans, scannb):
     """ Extract scan data
     """
     scan_data = {}
@@ -395,7 +363,7 @@ def getScan(uid_scans, scannb):
     scan_data['scanAxis'] = uid_scan.get('scanAxis')
 
     # get intensities
-    scan_data['data'] = txtlist2arr(uid_scan.findtext('dataPoints/intensities'))
+    scan_data['data'] = txt_list2arr(uid_scan.findtext('dataPoints/intensities'))
     units_intensities = uid_scan.find('dataPoints/intensities').get('unit')
 
     # get counting time
@@ -404,7 +372,7 @@ def getScan(uid_scans, scannb):
         time = uid_scan.findtext('dataPoints/countingTimes')
     else:
         time = uid_scan.findtext('dataPoints/commonCountingTime')
-    scan_data['time'] = txtlist2arr(time)
+    scan_data['time'] = txt_list2arr(time)
 
     # normalize intensity units to cps
     if units_intensities == 'counts':
@@ -415,7 +383,7 @@ def getScan(uid_scans, scannb):
     uid_pos = uid_scan.findall(xpath)
     n = len(scan_data['data'])  # nb of data points
     for pos in uid_pos:
-        info = readAxisInfo(pos, n)
+        info = read_axis_info(pos, n)
         if info['axis'] == '2Theta':
             scan_data['2Theta'] = info['data']
         elif info['axis'] == 'Omega':
@@ -435,16 +403,14 @@ def getScan(uid_scans, scannb):
     return scan_data
 
 
-def readAxisInfo(uid_pos, n):
+def read_axis_info(uid_pos, n):
     info = {'axis': uid_pos.get('axis'), 'unit': uid_pos.get('unit')}
     unspaced = True
     isarray = True
     uid_child = list(uid_pos)
     for child in uid_child:
-        #        node = uid_pos.find(child.tag)
-        #        print node
         if child.tag == 'listPositions':
-            info['data'] = txtlist2arr(uid_pos.findtext('listPositions'))
+            info['data'] = txt_list2arr(uid_pos.findtext('listPositions'))
             unspaced = False
         elif child.tag in ['startPosition', 'endPosition', 'commonPosition']:
             if 'data' not in info.keys():
@@ -457,21 +423,16 @@ def readAxisInfo(uid_pos, n):
                 info['data'] = np.asarray(np.double(uid_pos.findtext('commonPosition')))
                 isarray = False
         else:
-            print 'unsupported tag'
+            logger.debug('unsupported tag')
             info['data'] = np.array([])
 
     if unspaced and ('n' in locals()) and n and isarray:
         info['data'] = np.linspace(info['data'][0], info['data'][1], n)
 
     if not unspaced and ('n' in locals()) and n and len(info['data']) != n:
-        print 'different numbers of axis positions and data points'
+        logger.debug('Different numbers of axis positions and data points')
     return info
 
 
 if __name__ == '__main__':
-    file = read_file('test.xrdml')
-
-
-
-
-
+    data = read_file('test.xrdml')

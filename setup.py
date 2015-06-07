@@ -15,7 +15,7 @@ numpydir = join(get_python_lib(plat_specific=1), 'numpy')
 
 setup(name=package_name,
       version=__version__,
-      maintainer='B. Ziegler',
+      maintainer='Benedikt Ziegler',
       maintainer_email='benedikt.ziegler@unige.ch',
       packages=['xrd', 'xrd.simulation'],
       requires=['lxml', 'numpy', 'matplotlib'],
