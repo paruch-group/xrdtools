@@ -17,8 +17,8 @@ setup(name=package_name,
       version=__version__,
       maintainer='Benedikt Ziegler',
       maintainer_email='benedikt.ziegler@unige.ch',
-      packages=['xrd', 'xrd.simulation'],
-      requires=['lxml', 'numpy', 'matplotlib'],
-      package_dir={'mypkg': 'xrd/simulation/'},
-      package_data={'xrd.simulation': ['f0_CromerMann.dat']},
+      packages=['xrd',],  # 'xrd.simulation'
+      requires=['lxml', 'numpy', 'logger'],
+      # package_dir={'mypkg': 'xrd/simulation/'},
+      # package_data={'xrd.simulation': ['f0_CromerMann.dat']},
       )
