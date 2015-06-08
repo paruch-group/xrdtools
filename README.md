@@ -7,4 +7,4 @@ Install:
 
 To install just run the following command in our terminal from the xrdtools folder:
 
-sudo python setup.py install
+python setup.py install
