@@ -1,16 +1,10 @@
 # xrdtools
 
-Read *.xrdml files from Panalytical XRD machines.
+Read data from *.xrdml files (Panalytical XRD data files).
 
 Install:
 --------
 
-Mac OS X:
-    sudo python setup.py build
-    sudo python setup.py install
+To install just run the following command in our terminal from the xrdtools folder:
 
-
-Windows:
-If you have MingW32 installed, try:
-    python setup.py build --compiler=mingw32
-    python setup.py install
+sudo python setup.py install
