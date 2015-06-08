@@ -1,106 +1,95 @@
 import numpy as np
 
 
-def qmap(data, omoff=0, ttoff=0):
-    """ This function calculates kpar, kperp
+def get_qmap(data, omega_offset=0):
+    """ Function to calculate kpar, kperp.
 
-    Parameters
-    ----------
-    data : dictonary
-        loaded by readxrdml.read_file
-    omoff : float
-        omega angle offset
-    ttoff : float
-        2theta angle offset (honestly I think it shouldn't be anything but 0)
+    :param dict data: xrdml data
+    :param flaot omega_offset: omega angle offset
 
-    Returns
-    -------
-    kpar : array-like
-    kperp : array-like
+    :returns (ndarray, ndarray) kpar, kperp:
     """
-
-    tt = data['2Theta'] + ttoff
-    om = data['Omega'] + omoff
+    om = data['Omega'] + omega_offset
     lambd = data['Lambda']
-    return transform_angle2qvector(tt, om, lambd)
+    return angle2qvector(data['2Theta'], om, lambd)
 
 
-def transform_angle2qvector(tt, om, lambd):
+def angle2qvector(tt, om, lam):
     """
-    Calculate the q-vector from the 2theta and omega angle and the x-ray wavelength lambd.
+    Calculate the q-vector from the 2theta and omega angle and the x-ray wavelength lam.
 
-    Parameters
-    ----------
-    tt : array-like
-    om : array-like
-    lambd : float
+    :param ndarray tt:
+    :param ndarray om:
+    :param float lam:
 
-    Returns
-    -------
-    kpar : array-like
-    kperp : array-like
+    :return (ndarray, ndarray) kpar, kperp:
     """
     # convert degrees to radians
-    ttrad = np.radians(tt)
-    trad = ttrad / 2.
-    omrad = np.radians(om)
+    tt_rad = np.radians(tt)
+    t_rad = tt_rad / 2.
+    om_rad = np.radians(om)
 
     # calculate kpar, kperp
-    delta = trad - omrad
-    deltak = 2./lambd * np.sin(trad)
+    delta = t_rad - om_rad
+    delta_k = 2./lam * np.sin(t_rad)
 
-    kperp = deltak * np.cos(delta)
-    kpar = deltak * np.sin(delta)
+    kperp = delta_k * np.cos(delta)
+    kpar = delta_k * np.sin(delta)
 
     return kpar, kperp
 
 
-def q2hklmap(x, y, latt_params, hkl, lambd):
-    h = hkl['h']
-    k = hkl['k']
-    l = hkl['l']
+def q2hk_l_map(x, y, lattice_params=(3.905, 3.905, 3.905), hkl=None):
+    """
+    Compute the hk coordinates for a given q vector.
 
-    a = latt_params[0]
-    b = latt_params[1]
-    c = latt_params[2]
+    :param ndarray x:
+    :param ndarray y:
+    :param (float, float, float) lattice_params:
+    :param dict | None hkl:
+    :return (ndarray, ndarray) x, y:
+    """
+    if hkl is None:
+        hkl = {'h': 0, 'k': 0, 'l': 1}
+    a, b, c = lattice_params
 
-    x /= np.sqrt((h/a)**2+(k/b)**2)
+    x /= np.sqrt((hkl['h']/a)**2+(hkl['k']/b)**2)
     y *= c
     return x, y
 
 
-def angles(hkl_dic, lambd=1.54, latt_param=[3.905, 3.905, 3.905]):
+def angles(hkl, lam=1.54, lattice_param=(3.905, 3.905, 3.905)):
+    """
+    Compute the 2Theta, Omega and Delta angle for a given hkl point, wavelength lambda and
+    unit cell lattice parameters.
 
+    :param dict hkl:
+    :param float lam:
+    :param (float, float, float) lattice_param:
+    :return (ndarray, ndarray, ndarray) tt, omega, delta:
+    """
     # lattice parameters, 90 degree angles
-    a0 = latt_param[0]
-    a1 = latt_param[1]
-    a2 = latt_param[2]
+    a0, a1, a2 = lattice_param
 
-    h_dat = hkl_dic['h']
-    k_dat = hkl_dic['k']
-    l_dat = hkl_dic['l']
-#     if hkl['h'] != 0:
-#         h_dat = hkl_dic[0]
-#     if hkl['k'] != 0:
-#         k_dat = hkl_dic[0]
-#     if hkl['l'] != 0:
-#         l_dat = hkl_dic[1]
-
+    h = hkl['h']
+    k = hkl['k']
+    l = hkl['l']
 
     # calculation
-    d_hkl = 1/np.sqrt((h_dat/a0)**2 + (k_dat/a1)**2 + (l_dat/a2)**2)
+    d_hkl = 1/np.sqrt((h/a0)**2 + (k/a1)**2 + (l/a2)**2)
 
-    theta = np.degrees(np.arcsin(lambd/(2*d_hkl)))
-
-    offset_oop = np.degrees(np.arctan(1/np.sqrt((l_dat/a2)**2)/(1/np.sqrt((h_dat/a0)**2 + (k_dat/a1)**2))))
-
-    #offset_ip = np.degrees(np.arctan(1/np.sqrt(((k_dat/a1)**2)/(1/np.sqrt((h_dat/a0)**2))))) #not needed here
-    #phi = offset_ip
+    theta = np.degrees(np.arcsin(lam/(2*d_hkl)))
+    offset_oop = np.degrees(np.arctan(1/np.sqrt((l/a2)**2)/(1/np.sqrt((h/a0)**2 + (k/a1)**2))))
 
     tt = 2*theta
-
-    om1 = theta - offset_oop
-
+    omega = theta - offset_oop
     delta = offset_oop
 
-    return tt, om1, delta
+    return tt, omega, delta
+
+
+
+# for backward compatibility
+qmap = get_qmap
+transfrom_angle2qvector = angle2qvector
+q2hklmap = q2hk_l_map
