@@ -10,7 +10,11 @@ logger = logging.getLogger(__name__)
 
 
 def _txt_list2arr(txt):
-    """Split a list of numbers into an array
+    """
+    Split a list of numbers into an array
+
+    :param str txt: String containing floats separated by spaces.
+    :return ndarray: Array of float values.
     """
     if txt is None:
         return np.asarray([])
@@ -18,6 +22,17 @@ def _txt_list2arr(txt):
 
 
 def _get_array_for_single_value(data, key):
+    """
+    Create an array for a given `key` of the length of the data array.
+
+    :param dict data:
+        Dictionary containing the measurement data and settings.
+    :param str key:
+        Key of the parameter which needs to be transformed to the same length
+        as the data array.
+    :return dict data:
+        Same data dictionary as input.
+    """
     if not key in data:
         return data
     if data[key].size == 1:
@@ -28,13 +43,25 @@ def _get_array_for_single_value(data, key):
 
 
 def _sort_data(k, uid_scans, data):
+    """
+    Retrieve settings of scan `k` and append to data.
+
+    :param int k: Scan number
+    :param str uid_scans: Scan xpath identifier
+    :param dict data: Data dictionary
+    :return dict data: Data dictionary
+    """
+    # get a scan
     scan = _get_scan(uid_scans, k)
     if scan:
+        # append data to the completed data keys
         if data['measType'] == 'Scan' or scan['status'] == 'Completed':
             data['scannb'].append(k)
             for key in ['data', 'time', '2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
                 data = _append2arr(data, scan, key)
-        else:  # TODO: check if this code actually works?!
+        # append data to the incompleted data keys
+        # TODO: check if the following code actually works?!
+        else:
             data['iscannb'].append(k)
             data['idata'].append(scan['data'])
             data['itime'].append(scan['time'])
@@ -54,6 +81,14 @@ def _sort_data(k, uid_scans, data):
 
 
 def _append2arr(data, scan, key):
+    """
+    Append the data with key `key` from scan `scan` to the data dictionary.
+
+    :param dict data: Data dictionary
+    :param dict scan: Scan dictionary
+    :param str key: Parameter key of `scan` dictionary.
+    :return dict data: Data dictionary
+    """
     if not data[key]:
         data[key] = scan[key]
     else:
@@ -62,17 +97,17 @@ def _append2arr(data, scan, key):
 
 
 def _get_scan(uid_scans, scannb):
-    """ Extract scan data
     """
-    scan_data = {}
-    # here should be some input checks
+    Extract scan data.
 
-    #    # find the scan in the tree
-    #    xpath_scan = 'xrdMeasurement/scan'+'['+str(scannb)+']'
-    #    uid_scan = tree.find(xpath_scan)
-    #    if not uid_scan:
-    #        print 'Can not find a specified scan.'
-    #        return []
+    :param str uid_scans:
+    :param int scannb:
+    :return dict scan_data:
+    """
+    # create output dictionary
+    scan_data = {}
+
+    # TODO: here should be some input checks
 
     # get correct scan
     uid_scan = uid_scans[scannb]
@@ -125,6 +160,13 @@ def _get_scan(uid_scans, scannb):
 
 
 def _read_axis_info(uid_pos, n):
+    """
+    Get the settings for a given axis defined in xpath `uid_pos`.
+
+    :param str uid_pos: xpath
+    :param int n: Number of data points.
+    :return dict info: Axis settings
+    """
     info = {'axis': uid_pos.get('axis'), 'unit': uid_pos.get('unit')}
     unspaced = True
     isarray = True
@@ -151,12 +193,13 @@ def _read_axis_info(uid_pos, n):
         info['data'] = np.linspace(info['data'][0], info['data'][1], n)
 
     if not unspaced and ('n' in locals()) and n and len(info['data']) != n:
-        logger.debug('Different numbers of axis positions and data points')
+        logger.debug('Different length of axis positions and data points')
     return info
 
 
 def read_file(filename):
-    """Load a Panalytical XRDML file
+    """
+    Load a Panalytical XRDML file
 
     :param str filename: The filename of the xrdml file to be loaded.
     :return dict: The function returns a dictionary with all relevant data.
@@ -233,7 +276,8 @@ def read_file(filename):
                 data['scannb'].append(k)
                 for key in ['data', 'time', '2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
                     data = _append2arr(data, scan, key)
-            else:  # (TODO: check if this code actually works?!)
+            # TODO: check if this code actually works?!
+            else:
                 data['iscannb'].append(k)
                 data['idata'].append(scan['data'])
                 data['itime'].append(scan['time'])

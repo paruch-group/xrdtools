@@ -1,6 +1,6 @@
 *.pyc
 toolsdev
-xrd/simulation
-xrd/gui
+simulation
 xrd/viewer.py
+xrd/test.xrdml
 .idea

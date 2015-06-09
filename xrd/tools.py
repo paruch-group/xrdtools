@@ -2,12 +2,12 @@ import numpy as np
 
 
 def get_qmap(data, omega_offset=0):
-    """ Function to calculate kpar, kperp.
+    """
+    Function to calculate kpar, kperp.
 
     :param dict data: xrdml data
-    :param flaot omega_offset: omega angle offset
-
-    :returns (ndarray, ndarray) kpar, kperp:
+    :param float omega_offset: omega angle offset
+    :return (ndarray, ndarray) kpar, kperp:
     """
     om = data['Omega'] + omega_offset
     lambd = data['Lambda']
@@ -21,7 +21,6 @@ def angle2qvector(tt, om, lam):
     :param ndarray tt:
     :param ndarray om:
     :param float lam:
-
     :return (ndarray, ndarray) kpar, kperp:
     """
     # convert degrees to radians
@@ -86,7 +85,6 @@ def angles(hkl, lam=1.54, lattice_param=(3.905, 3.905, 3.905)):
     delta = offset_oop
 
     return tt, omega, delta
-
 
 
 # for backward compatibility
