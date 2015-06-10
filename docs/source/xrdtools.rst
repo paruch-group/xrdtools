@@ -4,13 +4,13 @@ API Reference
 Convenience functions
 ---------------------
 
-.. automodule:: xrd
+.. automodule:: xrdtools
     :members: read_xrdml
 
 
 xrd.tools module
 ----------------
 
-.. automodule:: xrd.tools
+.. automodule:: xrdtools.tools
     :members:
     :member-order: bysource

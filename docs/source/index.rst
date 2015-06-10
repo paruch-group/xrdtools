@@ -16,7 +16,7 @@ Getting started
 
     install
     tutorial
-    xrd
+    xrdtools
 
 
 Indices and tables

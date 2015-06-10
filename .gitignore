@@ -7,3 +7,4 @@ docs/build
 docs/source/_build
 xrd.egg-info
 dist
+build

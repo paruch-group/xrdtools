@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
-from xrd import __version__, __name__ as package_name
+from xrdtools import __version__, __name__ as package_name
 
 requires = [
     'lxml>=3.0',
@@ -10,7 +10,7 @@ requires = [
 
 setup(
     name=package_name,
-    packages=['xrd'],
+    packages=['xrdtools'],
     version=__version__,
     description='A library to read .xrdml files.',
     author='Benedikt Ziegler',
