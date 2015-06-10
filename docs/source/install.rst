@@ -1,6 +1,12 @@
 Getting xrdtools
 ----------------
-To install the package with git run the following commands in your command line::
+
+The simplest way to install the packages is via `pip`::
+
+    pip install xrdtools
+
+
+The most reasoned version can be cloned from git by running following commands in your command line::
 
     git clone https://github.com/paruch-group/xrdtools.git
     cd xrdtools
@@ -10,10 +16,9 @@ In case you do not have git installed on your system, go to
 
     https://github.com/paruch-group/xrdtools.git
 
-and download the package as *.zip* file. Unpack the file in a directory of your choosing run the
+and download the compressed package. Unpack the file in a directory of your choosing and run the
 following commands in the our terminal::
 
     cd /path/to/the/extracted/zip/file
     python setup.py install
 
-A pypi package will be prepared in the future.

@@ -12,7 +12,7 @@ setup(
     name=package_name,
     packages=['xrdtools'],
     version=__version__,
-    description='A library to read .xrdml files.',
+    description='A library to read .xrdml files',
     author='Benedikt Ziegler',
     author_email='benediktziegler@gmail.com',
     url='https://github.com/paruch-group/xrdtools',
