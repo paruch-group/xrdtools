@@ -5,3 +5,5 @@ test.xrdml
 .idea
 docs/build
 docs/source/_build
+xrd.egg-info
+dist

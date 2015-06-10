@@ -1,10 +1,13 @@
-# xrdtools
+xrdtools
+========
 
-Read data from *.xrdml files (Panalytical XRD data files).
+The xrdtools package can be used to read .xrdml files (Panalytical XPert X-ray diffraction). 
+Not all feature of file format may be supported at the current development state.
 
-Install:
---------
+For more information please visit
 
-To install just run the following command in our terminal from the xrdtools folder:
+    http://xrdtools.readthedocs.org/en/latest/
 
-python setup.py install
+or 
+    
+    https://github.com/paruch-group/xrdtools
