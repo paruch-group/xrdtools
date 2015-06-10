@@ -1,5 +1,5 @@
 from io import read_xrdml
-import tools
+import utils
 
 
 __version__ = '0.0.2'

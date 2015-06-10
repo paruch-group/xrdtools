@@ -8,9 +8,9 @@ Convenience functions
     :members: read_xrdml
 
 
-xrd.tools module
+xrd.utils module
 ----------------
 
-.. automodule:: xrdtools.tools
+.. automodule:: xrdtools.utils
     :members:
     :member-order: bysource
