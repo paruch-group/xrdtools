@@ -4,3 +4,4 @@ simulation
 test.xrdml
 .idea
 docs/build
+docs/source/_build
