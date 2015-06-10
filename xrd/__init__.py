@@ -1,9 +1,4 @@
-"""
-Created on Apr 08, 2013
-
-@author: bziegler
-"""
-from readxrdml import read_file
+from io import read_xrdml
 import tools
 
 

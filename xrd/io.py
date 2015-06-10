@@ -236,7 +236,7 @@ def _read_axis_info(uid_pos, n):
     return info
 
 
-def read_file(filename):
+def read_xrdml(filename):
     """Load a Panalytical XRDML file
 
     Parameters

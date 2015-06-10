@@ -21,6 +21,10 @@ def get_qmap(data, omega_offset=0):
     return angle2qvector(data['2Theta'], om, lambd)
 
 
+# for backward compatibility
+qmap = get_qmap
+
+
 def angle2qvector(tt, om, lam=1.54):
     """Convert angles to q vector.
 
@@ -56,7 +60,11 @@ def angle2qvector(tt, om, lam=1.54):
     return kpar, kperp
 
 
-def q2hk_l_map(x, y, lattice_params=(3.905, 3.905, 3.905), hkl=None):
+# for backward compatibility
+transfrom_angle2qvector = angle2qvector
+
+
+def q2hkl_map(x, y, lattice_params=(3.905, 3.905, 3.905), hkl=None):
     """Compute the hk coordinates for a given q vector.
 
     Parameters
@@ -82,6 +90,10 @@ def q2hk_l_map(x, y, lattice_params=(3.905, 3.905, 3.905), hkl=None):
     return x, y
 
 
+# for backward compatibility
+q2hklmap = q2hkl_map
+
+
 def angles(hkl, lam=1.54, lattice_param=(3.905, 3.905, 3.905)):
     """Compute the angle for a given hkl position.
 
@@ -89,11 +101,11 @@ def angles(hkl, lam=1.54, lattice_param=(3.905, 3.905, 3.905)):
     unit cell lattice parameters.
 
     Parameters
-    ---------
+    ----------
     hkl : dict
         A dictionary containing the hkl values.
     lam : float
-        The wavelength lambda in Angstrom [Default: 1.54].
+        The wavelength lambda in Angstrom. Defaults to 1.54.
     lattice_params : tuple
         A tuple of three floats for the lattice parameter.
 
@@ -121,9 +133,3 @@ def angles(hkl, lam=1.54, lattice_param=(3.905, 3.905, 3.905)):
     delta = offset_oop
 
     return tt, omega, delta
-
-
-# for backward compatibility
-qmap = get_qmap
-transfrom_angle2qvector = angle2qvector
-q2hklmap = q2hk_l_map
