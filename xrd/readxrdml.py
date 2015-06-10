@@ -2,7 +2,7 @@ import os
 import string
 import logging
 
-from lxml.etree import parse, tostring, XML
+import lxml
 import numpy as np
 
 
@@ -215,9 +215,9 @@ def read_file(filename):
     if file_ext == '':
         filename = file_base + '.xrdml'
 
-    tree = parse(os.path.join(path, filename)).getroot()
-    treestr = string.replace(tostring(tree), ' xmlns=', ' xmlnamespace=')
-    xrdm = XML(treestr)
+    tree = lxml.etree.parse(os.path.join(path, filename)).getroot()
+    treestr = string.replace(lxml.etree.tostring(tree), ' xmlns=', ' xmlnamespace=')
+    xrdm = lxml.etree.XML(treestr)
 
     data = {'filename': filename,
             'sample': xrdm.findtext('sample/id'),
