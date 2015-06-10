@@ -2,7 +2,6 @@
 README.txt
 setup.py
 xrd/__init__.py
-xrd/angles.py
 xrd/qmap.py
 xrd/readxrdml.py
  
