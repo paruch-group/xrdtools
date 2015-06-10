@@ -2,19 +2,24 @@ import os
 import string
 import logging
 
-import lxml
+from lxml import etree
 import numpy as np
-
 
 logger = logging.getLogger(__name__)
 
 
 def _txt_list2arr(txt):
-    """
-    Split a list of numbers into an array
+    """Split a list of numbers `txt` into a numpy ndarray.
 
-    :param str txt: String containing floats separated by spaces.
-    :return ndarray: Array of float values.
+    Parameters
+    ----------
+    txt : str
+        String containing floats separated by spaces.
+
+    Returns
+    -------
+    ndarray
+        Numpy ndarray of dtype float.
     """
     if txt is None:
         return np.asarray([])
@@ -22,37 +27,49 @@ def _txt_list2arr(txt):
 
 
 def _get_array_for_single_value(data, key):
-    """
-    Create an array for a given `key` of the length of the data array.
+    """Create an array for a given `key` of the length of the data array.
 
-    :param dict data:
+    Parameters
+    ----------
+    data : dict
         Dictionary containing the measurement data and settings.
-    :param str key:
+    key : str
         Key of the parameter which needs to be transformed to the same length
         as the data array.
-    :return dict data:
-        Same data dictionary as input.
+
+    Returns
+    -------
+    dict
+        Same data dictionary as input dictionary `data`.
     """
-    if not key in data:
+    if key not in data:
         return data
     if data[key].size == 1:
         data[key] = np.ones_like(data['data']) * data[key]
-    elif np.all(data[key] == data[key][0]):
+    elif len(data[key]) > 1 and np.all(data[key] == data[key][0]):
         data[key] = data[key][0]
     return data
 
 
 def _sort_data(k, uid_scans, data):
-    """
-    Retrieve settings of scan `k` and append to data.
+    """Retrieve settings of scan `k` and append to data.
 
-    :param int k: Scan number
-    :param str uid_scans: Scan xpath identifier
-    :param dict data: Data dictionary
-    :return dict data: Data dictionary
+    Parameters
+    ----------
+    k : int
+        Scan number
+    uid_scans : list
+        A list containing `lxml.etree._Element` elements pointing to the scans in a xml tree.
+    data : dict
+        Data dictionary containing the measurement data and settings.
+
+    Returns
+    -------
+    dict
+        Same data dictionary as input dictionary `data`.
     """
     # get a scan
-    scan = _get_scan(uid_scans, k)
+    scan = _get_scan_data(uid_scans, k)
     if scan:
         # append data to the completed data keys
         if data['measType'] == 'Scan' or scan['status'] == 'Completed':
@@ -81,13 +98,21 @@ def _sort_data(k, uid_scans, data):
 
 
 def _append2arr(data, scan, key):
-    """
-    Append the data with key `key` from scan `scan` to the data dictionary.
+    """Append the data with key `key` from scan `scan` to the data dictionary.
 
-    :param dict data: Data dictionary
-    :param dict scan: Scan dictionary
-    :param str key: Parameter key of `scan` dictionary.
-    :return dict data: Data dictionary
+    Parameters
+    ----------
+    data : dict
+        Data dictionary containing the measurement data and settings.
+    scan : dict
+        Scan dictionary containing the measurement data and settings of one particular scan.
+    key : str
+        Parameter key of `scan` dictionary.
+
+    Returns
+    -------
+    dict
+        Same data dictionary as input dictionary `data`.
     """
     if not data[key]:
         data[key] = scan[key]
@@ -96,13 +121,20 @@ def _append2arr(data, scan, key):
     return data
 
 
-def _get_scan(uid_scans, scannb):
-    """
-    Extract scan data.
+def _get_scan_data(uid_scans, scannb):
+    """Get the data of scan with number `scannb`.
 
-    :param str uid_scans:
-    :param int scannb:
-    :return dict scan_data:
+    Parameters
+    ----------
+    uid_scans : list
+        A list containing `lxml.etree._Element` elements pointing to the scans in a xml tree.
+    scannb : int
+        ID of the scan.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the data and settings for the specified scan `scannb`.
     """
     # create output dictionary
     scan_data = {}
@@ -160,12 +192,19 @@ def _get_scan(uid_scans, scannb):
 
 
 def _read_axis_info(uid_pos, n):
-    """
-    Get the settings for a given axis defined in xpath `uid_pos`.
+    """Get the settings for a given axis.
 
-    :param str uid_pos: xpath
-    :param int n: Number of data points.
-    :return dict info: Axis settings
+    Parameters
+    ----------
+    uid_pos : lxml.etree._Element
+        A `lxml.etree._Element` element pointing to axis information in the xml tree.
+    n : int
+        Number of data points.
+
+    Returns
+    -------
+    dict
+        Axis settings stored in a dictionary.
     """
     info = {'axis': uid_pos.get('axis'), 'unit': uid_pos.get('unit')}
     unspaced = True
@@ -198,11 +237,17 @@ def _read_axis_info(uid_pos, n):
 
 
 def read_file(filename):
-    """
-    Load a Panalytical XRDML file
+    """Load a Panalytical XRDML file
 
-    :param str filename: The filename of the xrdml file to be loaded.
-    :return dict: The function returns a dictionary with all relevant data.
+    Parameters
+    ----------
+    filename : str
+        The filename of the xrdml file to be loaded.
+
+    Returns
+    -------
+    dict
+        A dictionary with all relevant data of the measurement.
     """
 
     if not os.path.exists(filename):
@@ -215,9 +260,9 @@ def read_file(filename):
     if file_ext == '':
         filename = file_base + '.xrdml'
 
-    tree = lxml.etree.parse(os.path.join(path, filename)).getroot()
-    treestr = string.replace(lxml.etree.tostring(tree), ' xmlns=', ' xmlnamespace=')
-    xrdm = lxml.etree.XML(treestr)
+    tree = etree.parse(os.path.join(path, filename)).getroot()
+    treestr = string.replace(etree.tostring(tree), ' xmlns=', ' xmlnamespace=')
+    xrdm = etree.XML(treestr)
 
     data = {'filename': filename,
             'sample': xrdm.findtext('sample/id'),
@@ -270,7 +315,7 @@ def read_file(filename):
         data[key] = []
 
     for k in range(nb_scans):
-        scan = _get_scan(uid_scans, k)
+        scan = _get_scan_data(uid_scans, k)
         if scan:
             if data['measType'] == 'Scan' or scan['status'] == 'Completed':
                 data['scannb'].append(k)

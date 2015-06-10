@@ -2,26 +2,44 @@ import numpy as np
 
 
 def get_qmap(data, omega_offset=0):
-    """
-    Function to calculate kpar, kperp.
+    """Function to calculate kpar, kperp.
 
-    :param dict data: xrdml data
-    :param float omega_offset: omega angle offset
-    :return (ndarray, ndarray) kpar, kperp:
+    Parameters
+    ----------
+    data : dict
+        A xrdml data dictionary.
+    omega_offset : float
+        Offset for the omega angle.
+
+    Returns
+    -------
+    kpar : ndarray
+    kperp : ndarray
     """
     om = data['Omega'] + omega_offset
     lambd = data['Lambda']
     return angle2qvector(data['2Theta'], om, lambd)
 
 
-def angle2qvector(tt, om, lam):
-    """
-    Calculate the q-vector from the 2theta and omega angle and the x-ray wavelength lam.
+def angle2qvector(tt, om, lam=1.54):
+    """Convert angles to q vector.
 
-    :param ndarray tt:
-    :param ndarray om:
-    :param float lam:
-    :return (ndarray, ndarray) kpar, kperp:
+    Calculate the q-vector from the 2theta `tt` and omega `om` angle and
+    the x-ray wavelength lambda `lam`.
+
+    Parameters
+    ----------
+    tt : array-like
+        Array containing the 2Theta values.
+    om : array-like
+        Array containing the Omega values.
+    lam : float
+        The wavelength lambda in Angstrom [Default: 1.54].
+
+    Returns
+    -------
+    kpar : ndarray
+    kperp : ndarray
     """
     # convert degrees to radians
     tt_rad = np.radians(tt)
@@ -39,14 +57,21 @@ def angle2qvector(tt, om, lam):
 
 
 def q2hk_l_map(x, y, lattice_params=(3.905, 3.905, 3.905), hkl=None):
-    """
-    Compute the hk coordinates for a given q vector.
+    """Compute the hk coordinates for a given q vector.
 
-    :param ndarray x:
-    :param ndarray y:
-    :param (float, float, float) lattice_params:
-    :param dict | None hkl:
-    :return (ndarray, ndarray) x, y:
+    Parameters
+    ----------
+    x : ndarray
+    y : ndarray
+    lattice_params : tuple
+        A tuple of three floats for the lattice parameter.
+    hkl : dict
+        A dictionary containing the hkl values. Defaults to 001 if not given [Default: None].
+
+    Returns
+    -------
+    x : ndarray
+    y : ndarray
     """
     if hkl is None:
         hkl = {'h': 0, 'k': 0, 'l': 1}
@@ -58,14 +83,25 @@ def q2hk_l_map(x, y, lattice_params=(3.905, 3.905, 3.905), hkl=None):
 
 
 def angles(hkl, lam=1.54, lattice_param=(3.905, 3.905, 3.905)):
-    """
+    """Compute the angle for a given hkl position.
+
     Compute the 2Theta, Omega and Delta angle for a given hkl point, wavelength lambda and
     unit cell lattice parameters.
 
-    :param dict hkl:
-    :param float lam:
-    :param (float, float, float) lattice_param:
-    :return (ndarray, ndarray, ndarray) tt, omega, delta:
+    Parameters
+    ---------
+    hkl : dict
+        A dictionary containing the hkl values.
+    lam : float
+        The wavelength lambda in Angstrom [Default: 1.54].
+    lattice_params : tuple
+        A tuple of three floats for the lattice parameter.
+
+    Returns
+    -------
+    tt : ndarray
+    omega : ndarray
+    delta : ndarray
     """
     # lattice parameters, 90 degree angles
     a0, a1, a2 = lattice_param
