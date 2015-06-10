@@ -18,7 +18,6 @@ import os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, '/Users/zieglerb/Documents/coding/python/xrdtools/xrd')
 sys.path.insert(0, os.path.abspath('../'))
 
 # -- General configuration ------------------------------------------------
@@ -269,10 +268,10 @@ texinfo_documents = [
 # -- Options for Epub output ----------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'xrdtools'
-epub_author = u'Benedikt Ziegler'
-epub_publisher = u'Benedikt Ziegler'
-epub_copyright = u'2015, Benedikt Ziegler'
+# epub_title = u'xrdtools'
+# epub_author = u'Benedikt Ziegler'
+# epub_publisher = u'Benedikt Ziegler'
+# epub_copyright = u'2015, Benedikt Ziegler'
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = u'xrdtools'
@@ -312,7 +311,7 @@ epub_copyright = u'2015, Benedikt Ziegler'
 #epub_post_files = []
 
 # A list of files that should not be packed into the epub file.
-epub_exclude_files = ['search.html']
+# epub_exclude_files = ['search.html']
 
 # The depth of the table of contents in toc.ncx.
 #epub_tocdepth = 3
