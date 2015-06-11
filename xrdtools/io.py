@@ -249,10 +249,11 @@ def read_xrdml(filename):
     dict
         A dictionary with all relevant data of the measurement.
     """
-
     if not os.path.exists(filename):
         logger.error('File "{}" does not exist.'.format(filename))
         raise ValueError('This is not a valid filename.')
+
+    filename = os.path.abspath(filename)
 
     path, basename = os.path.split(filename)
     file_base, file_ext = os.path.splitext(basename)
