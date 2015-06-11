@@ -341,7 +341,7 @@ def read_xrdml(filename):
 
     # if we have only one incomplete scan, the scan is considered to be
     # completed and is moved to completed scans list
-    if not data['scannb'] and len(data['iscannb']) == 1:
+    if data['scannb'] == [] and len(data['iscannb']) == 1:
         logger.debug('One and only incomplete scan found in the data. This scan is considered complete.')
 
         for key, ikey in zip(['scannb', 'data', 'time', '2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z'],
@@ -377,8 +377,8 @@ def read_xrdml(filename):
                 #            data['iZ'] = []
 
     # remove redundant information
-    [data.pop(key) for key in ['Phi', 'Psi', 'X', 'Y', 'Z'] if not data[key]]
-    if not data['iscannb']:
+    [data.pop(key) for key in ['Phi', 'Psi', 'X', 'Y', 'Z'] if data[key] == []]
+    if data['iscannb'] == []:
         [data.pop(key) for key in ['iscannb', 'idata', 'itime', 'i2Theta', 'iOmega',
                                    'iPhi', 'iPsi', 'iX', 'iY', 'iZ']]
 
