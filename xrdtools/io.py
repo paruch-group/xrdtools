@@ -114,7 +114,7 @@ def _append2arr(data, scan, key):
     dict
         Same data dictionary as input dictionary `data`.
     """
-    if not len(data[key]):
+    if data[key] == []:
         data[key] = scan[key]
     else:
         data[key] = np.vstack((data[key], scan[key]))
