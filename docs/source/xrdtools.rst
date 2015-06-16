@@ -1,15 +1,15 @@
 API Reference
 =============
 
-Convenience functions
----------------------
+xrdtools module
+---------------
 
 .. automodule:: xrdtools
     :members: read_xrdml
 
 
-xrd.utils module
-----------------
+xrdtools.utils module
+---------------------
 
 .. automodule:: xrdtools.utils
     :members:
