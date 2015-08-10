@@ -458,7 +458,6 @@ def read_xrdml(filename):
                 axisType = 'unknown'
                 data['xlabel'] = 'unknown'
 
-            # (TODO: maybe optimization possible, load units before)
             xpath = 'xrdMeasurement/scan[1]/dataPoints/positions'
             uid = xrdm.find(xpath)
             for pos in uid:
@@ -497,7 +496,6 @@ def read_xrdml(filename):
                 data['yunit'] = 'nd'
 
     if data['measType'] == 'Area measurement':
-        # TODO: check if omega is same dimensions as 2theta, otherwise correct it
         dim_2t = data['2Theta'].shape
         dim_o = data['Omega'].shape
         if dim_2t[1] != dim_o[1] and data['scanAxis'] == '2Theta' and data['stepAxis'] == 'Omega':
