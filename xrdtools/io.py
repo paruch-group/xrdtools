@@ -187,7 +187,7 @@ def _get_scan_data(uid_scans, scannb):
         elif info['axis'] == 'Z':
             scan_data['Z'] = info['data']
         else:
-            print 'axis type not supported'
+            print('axis type not supported')
     return scan_data
 
 
@@ -262,8 +262,9 @@ def read_xrdml(filename):
         filename = file_base + '.xrdml'
 
     tree = etree.parse(os.path.join(path, filename)).getroot()
-    treestr = string.replace(etree.tostring(tree), ' xmlns=', ' xmlnamespace=')
-    xrdm = etree.XML(treestr)
+    tree_str = etree.tostring(tree)
+    tree_str = tree_str.replace(b' xmlns=', b' xmlnamespace=')
+    xrdm = etree.XML(tree_str)
 
     data = {'filename': filename,
             'sample': xrdm.findtext('sample/id'),
