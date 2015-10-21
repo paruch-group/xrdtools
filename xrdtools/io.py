@@ -504,7 +504,7 @@ def read_xrdml(filename):
     if uid is not None:
         unit = uid.get('unit')
         if unit != 'mm':
-            logger.debug('Mask width units are not \'mm\'')
+            logger.debug("Mask width units are not 'mm'")
         data['maskWidth'] = np.double(xrdm.findtext(xpath))
 
     # Divergence slit Height [OPTIONAL]
@@ -513,7 +513,7 @@ def read_xrdml(filename):
     if uid is not None:
         unit = uid.get('unit')
         if unit != 'mm':
-            logger.debug('Divergence slit height units are not \'mm\'')
+            logger.debug("Divergence slit height units are not 'mm'")
         data['slitHeight'] = np.double(xrdm.findtext(xpath))
 
     return data
