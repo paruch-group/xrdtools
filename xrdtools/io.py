@@ -1,3 +1,5 @@
+from __future__ import unicode_literals, print_function, division, absolute_import
+
 import os
 import logging
 
@@ -260,6 +262,7 @@ def read_xrdml(filename):
     if file_ext == '':
         filename = file_base + '.xrdml'
 
+    # doing some namespace clean up. It's definitely not the best way.
     tree = etree.parse(os.path.join(path, filename)).getroot()
     tree_str = etree.tostring(tree)
     tree_str = tree_str.replace(b' xmlns=', b' xmlnamespace=')
@@ -425,7 +428,7 @@ def read_xrdml(filename):
         print('usedWavelength type is not supported (using K-Alpha 1')
         data['Lambda'] = data['kAlpha1']
 
-    # get some usefull information (x/y-label, x/y-units)
+    # get some useful information (x/y-label, x/y-units)
     if nb_scans > 0:
         if 'scanAxis' in data.keys():
             if data['scanAxis'] == 'Gonio':
@@ -462,7 +465,7 @@ def read_xrdml(filename):
             uid = xrdm.find(xpath)
             for pos in uid:
                 if pos.get('axis') == axisType:
-                    data['xunit'] = pos.get('unit')
+                    data['xunit'] = uid.get('unit')
                     break
             if 'xunit' not in data.keys():
                 data['xunit'] = 'nd'
@@ -490,7 +493,7 @@ def read_xrdml(filename):
             uid = xrdm.find(xpath)
             for pos in uid:
                 if pos.get('axis') == axisType:
-                    data['yunit'] = pos.get('unit')
+                    data['yunit'] = uid.get('unit')
                     break
             if 'yunit' not in data.keys():
                 data['yunit'] = 'nd'
@@ -527,4 +530,4 @@ def read_xrdml(filename):
 
 
 if __name__ == '__main__':
-    data = read_xrdml('test.xrdml')
+    data = read_xrdml('test_area.xrdml')
