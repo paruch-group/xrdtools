@@ -16,7 +16,7 @@ setup(
     author='Benedikt Ziegler',
     author_email='benediktziegler@gmail.com',
     url='https://github.com/paruch-group/xrdtools',
-    keywords=['xrdml', 'loading'],
+    keywords=['xrdml', 'read'],
     license='MIT',
     classifiers=[
         'Development Status :: 3 - Alpha',
