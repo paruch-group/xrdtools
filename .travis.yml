@@ -1,11 +1,19 @@
 language: python
 python:
-  - "2.6"
-  - "2.7"
-  - "3.2"
-  - "3.3"
-  - "3.4"
-# command to install dependencies
+- '2.6'
+- '2.7'
+- '3.2'
+- '3.3'
+- '3.4'
 install: pip install -r requirements.txt
-# command to run tests
 script: nosetests
+deploy:
+  provider: pypi
+  user: zieglerb
+  password:
+    secure: Ggpxq6/FOYrSybi2LFBas/AbeHOZbLCCVGQPD7tx6VnETUINTlphTovN3+MIapa2px8MdWEGD530Mse9nL8sphi+cjlzt/Xuf/c7Ftnboz3tSAJEvCCKAbzAePDXyco6UTZKOWTmcn+sWngcuU2BMqDC3VmYT+m2AjvOrW6RKCdyKSDnp841zBinbp41nqgpZxlyHt9xZUQTGvY/GVeoKo52h7DI7fOIIsdEzn3vyFzXoLwOUDDG0mt0jMQHUz6paFJLhsxwkraT0GLXhjpHdhCyZ8nxm6HVcmegUPgjHdgrn3LOhcMP/M/NFhWsaFExJyftDIe/7z66cy+851li3FIJSYGt4v5RxHR1Tf9YDtFfV4/KEK5q3fwUv5CUUmbyhhwFziUZeAH7ek7/hStf/unD1Xo5KI6NPdMbUtHqsATvOiGDDR0GYszAd1Hb825UBy8yn2AWLXFZkhd0vyEKtVsUpSgTQ58inDK7Kx03S0CwdYimztlpGoUVkf8yUWpcfgM/gGNYpj8OfjMDG2tqGqLeLZul+iOsjPUIgDskXv9CxAoORrGuC8inHtFPgcqmAWVGaQtnXd1aywC0kFqLudGhrJIu4ovfqBWYkuCvN/XlhH0q4Y9mwl1JIs0S6hIy/VKvZcfDyDi1zx/0q6/mdJzscwCjjKxclIe1mlh6mKA=
+  on:
+    tags: true
+    repo: paruch-group/xrdtools
+    branch: master
+  distributions: "sdist bdist_wheel"
