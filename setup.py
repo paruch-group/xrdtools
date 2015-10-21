@@ -16,7 +16,6 @@ setup(
     author='Benedikt Ziegler',
     author_email='benediktziegler@gmail.com',
     url='https://github.com/paruch-group/xrdtools',
-    download_url='https://github.com/paruch-group/xrdtools/tarball/0.1',
     keywords=['xrdml', 'loading'],
     license='MIT',
     classifiers=[
