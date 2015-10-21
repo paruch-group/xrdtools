@@ -1,11 +1,8 @@
+__pycache__/
+.idea/
 *.pyc
-toolsdev
-simulation
-test.xrdml
-.idea
+build/
+dist/
 docs/build
 docs/source/_build
-xrd.egg-info
-dist
-build
-upload2pypi.txt
+*.egg-info/
