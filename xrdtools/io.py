@@ -1,5 +1,4 @@
 import os
-import string
 import logging
 
 from lxml import etree
@@ -528,4 +527,4 @@ def read_xrdml(filename):
 
 
 if __name__ == '__main__':
-    data = read_file('test.xrdml')
+    data = read_xrdml('test.xrdml')
