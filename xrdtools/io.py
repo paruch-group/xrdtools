@@ -6,6 +6,7 @@ import logging
 from lxml import etree
 import numpy as np
 
+
 logger = logging.getLogger(__name__)
 
 
