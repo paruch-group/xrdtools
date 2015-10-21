@@ -8,7 +8,7 @@ from xrdtools import read_xrdml
 class TestXrdmlRead(unittest.TestCase):
 
     def test_read_xrdml_area_scan(self):
-        data = read_xrdml('test_area.xrdml')
+        data = read_xrdml('tests/test_area.xrdml')
 
         self.assertEqual(data['comment'], {'1': None})
         self.assertEqual(data['kAlpha1'], 1.540598)
@@ -20,8 +20,8 @@ class TestXrdmlRead(unittest.TestCase):
         self.assertEqual(data['X'], [ 2.37])
         self.assertEqual(data['Phi'], [0.])
         self.assertEqual(data['Psi'], [-0.4])
-        self.assertEqual(data['yunit'], 'nd')
-        self.assertEqual(data['xunit'], 'nd')
+        self.assertEqual(data['yunit'], 'deg')
+        self.assertEqual(data['xunit'], 'deg')
         self.assertEqual(data['xlabel'], 'Omega-2Theta')
         self.assertEqual(data['status'], 'Completed')
         self.assertEqual(data['ylabel'], 'Omega')

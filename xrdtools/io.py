@@ -463,12 +463,7 @@ def read_xrdml(filename):
 
             xpath = 'xrdMeasurement/scan[1]/dataPoints/positions'
             uid = xrdm.find(xpath)
-            for pos in uid:
-                if pos.get('axis') == axisType:
-                    data['xunit'] = uid.get('unit')
-                    break
-            if 'xunit' not in data.keys():
-                data['xunit'] = 'nd'
+            data['xunit'] = uid.get('unit', 'nd')
 
         if 'stepAxis' in data.keys():
             if data['stepAxis'] == 'Gonio':
@@ -491,12 +486,7 @@ def read_xrdml(filename):
             # TODO: maybe optimization possible, load units before
             xpath = 'xrdMeasurement/scan[1]/dataPoints/positions'
             uid = xrdm.find(xpath)
-            for pos in uid:
-                if pos.get('axis') == axisType:
-                    data['yunit'] = uid.get('unit')
-                    break
-            if 'yunit' not in data.keys():
-                data['yunit'] = 'nd'
+            data['yunit'] = uid.get('unit', 'nd')
 
     if data['measType'] == 'Area measurement':
         dim_2t = data['2Theta'].shape
