@@ -4,23 +4,23 @@ import os
 import unittest
 
 from xrdtools import read_xrdml
-from xrdtools.io import test_xrdml_schema
+from xrdtools.io import validate_xrdml_schema
 
 
 class TestXrdmlRead(unittest.TestCase):
 
     def test_schema(self):
-        filename = os.path.abspath('test_area.xrdml')
+        filename = os.path.abspath('tests/test_area.xrdml')
 
-        version = test_xrdml_schema(filename)
+        version = validate_xrdml_schema(filename)
         self.assertEqual(version, 1.0)
 
     def test_read_xrdml_area_scan(self):
-        filename = os.path.abspath('test_area.xrdml')
+        filename = os.path.abspath('tests/test_area.xrdml')
 
         data = read_xrdml(filename)
 
-        self.assertEqual(data['comment'], {'1': None})
+        self.assertEqual(data['comment'], {'1': ''})
         self.assertEqual(data['kAlpha1'], 1.540598)
         self.assertEqual(data['kAlpha2'], 1.544426)
         self.assertEqual(data['kBeta'], 1.39225)

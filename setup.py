@@ -24,7 +24,7 @@ setup(
     packages=['xrdtools'],
     include_package_data=True,
     package_data={
-        '': ['*.xsd'],
+        'xrdtools': ['data/schemas/*.xsd'],
     },
     author='Benedikt Ziegler',
     author_email='benediktziegler@gmail.com',
