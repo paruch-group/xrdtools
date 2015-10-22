@@ -6,8 +6,33 @@ import logging
 from lxml import etree
 import numpy as np
 
-
 logger = logging.getLogger(__name__)
+
+package_path = os.path.dirname(__file__)
+
+
+def test_xrdml_schema(filename):
+    schemas = [(1.0, 'data/schemas/XRDMeasurement10.xsd'),
+               (1.1, 'data/schemas/XRDMeasurement11.xsd'),
+               (1.2, 'data/schemas/XRDMeasurement12.xsd'),
+               (1.3, 'data/schemas/XRDMeasurement13.xsd'),
+               (1.4, 'data/schemas/XRDMeasurement14.xsd'),
+               (1.5, 'data/schemas/XRDMeasurement15.xsd'),
+               ]
+    schemas = [(v, os.path.join(package_path, schema)) for v, schema in schemas]
+
+    with open(filename, 'r') as f:
+        data_xml = etree.parse(f)
+
+    for version, schema in schemas:
+        with open(schema, 'r') as f:
+            xmlschema_doc = etree.parse(f)
+            xmlschema = etree.XMLSchema(xmlschema_doc)
+
+        valid = xmlschema.validate(data_xml)
+        if valid:
+            return version
+    return None
 
 
 def _txt_list2arr(txt):
@@ -239,7 +264,7 @@ def _read_axis_info(uid_pos, n):
 
 
 def read_xrdml(filename):
-    """Load a Panalytical XRDML file
+    """Load a Panalytical XRDML file.
 
     Parameters
     ----------

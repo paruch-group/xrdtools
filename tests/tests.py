@@ -1,13 +1,24 @@
 from __future__ import unicode_literals, print_function, division, absolute_import
+import os
 
 import unittest
 
 from xrdtools import read_xrdml
+from xrdtools.io import test_xrdml_schema
 
 
 class TestXrdmlRead(unittest.TestCase):
+
+    def test_schema(self):
+        filename = os.path.abspath('test_area.xrdml')
+
+        version = test_xrdml_schema(filename)
+        self.assertEqual(version, 1.0)
+
     def test_read_xrdml_area_scan(self):
-        data = read_xrdml('tests/test_area.xrdml')
+        filename = os.path.abspath('test_area.xrdml')
+
+        data = read_xrdml(filename)
 
         self.assertEqual(data['comment'], {'1': None})
         self.assertEqual(data['kAlpha1'], 1.540598)
