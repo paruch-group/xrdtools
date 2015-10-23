@@ -41,7 +41,6 @@ def xrdml():
             file_out = filename.replace('.xrdml', '.txt')
         elif args.output == 'stdout':
             file_out = sys.stdout
-        else:
-            pass
+
         delimiter = args.delimiter.decode('string-escape')
         np.savetxt(file_out, output.T, delimiter=delimiter, header=delimiter.join(labels))

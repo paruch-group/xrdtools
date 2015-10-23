@@ -14,3 +14,10 @@ xrdtools.utils module
 .. automodule:: xrdtools.utils
     :members:
     :member-order: bysource
+
+
+xrdtools.utils modele
+---------------------
+
+.. automodule:: xrdtools.tools
+    :members:
