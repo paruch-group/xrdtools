@@ -1,11 +1,52 @@
+from __future__ import unicode_literals, print_function, division, absolute_import
+
 import os
-import string
 import logging
 
 from lxml import etree
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
+package_path = os.path.dirname(__file__)
+
+
+def validate_xrdml_schema(filename):
+    """Validate the xml schema of a given file.
+
+    Parameters
+    ----------
+    filename : str
+        The Filename of the `.xrdml` file to test.
+
+    Returns
+    -------
+    float or None
+        Returns the version number as float or None if
+        the file was not matching any provided xml schema.
+
+    """
+    schemas = [(1.5, 'data/schemas/XRDMeasurement15.xsd'),
+               (1.4, 'data/schemas/XRDMeasurement14.xsd'),
+               (1.3, 'data/schemas/XRDMeasurement13.xsd'),
+               (1.2, 'data/schemas/XRDMeasurement12.xsd'),
+               (1.1, 'data/schemas/XRDMeasurement11.xsd'),
+               (1.0, 'data/schemas/XRDMeasurement10.xsd'),
+               ]
+    schemas = [(v, os.path.join(package_path, schema)) for v, schema in schemas]
+
+    with open(filename, 'r') as f:
+        data_xml = etree.parse(f)
+
+    for version, schema in schemas:
+        with open(schema, 'r') as f:
+            xmlschema_doc = etree.parse(f)
+            xmlschema = etree.XMLSchema(xmlschema_doc)
+
+        valid = xmlschema.validate(data_xml)
+        if valid:
+            return version
+    return None
 
 
 def _txt_list2arr(txt):
@@ -114,32 +155,38 @@ def _append2arr(data, scan, key):
     dict
         Same data dictionary as input dictionary `data`.
     """
-    if data[key] == []:
+    if data[key] == []:  # keep as is, otherwise it fails the test
         data[key] = scan[key]
     else:
         data[key] = np.vstack((data[key], scan[key]))
     return data
 
 
-def _get_scan_data(uid_scans, scannb):
+def _get_scan_data(uid_scans, scannb, namespace=None):
     """Get the data of scan with number `scannb`.
 
     Parameters
     ----------
     uid_scans : list
-        A list containing `lxml.etree._Element` elements pointing to the scans in a xml tree.
+        A list containing `lxml.etree._Element` elements
+        pointing to the scans in a xml tree.
     scannb : int
         ID of the scan.
+    namespace : dict or None, optional
+        A dictionary defining the namespace `ns`. If None,
+        it is determined from the uid_scan.nsmap[None].
 
     Returns
     -------
     dict
-        A dictionary containing the data and settings for the specified scan `scannb`.
+        A dictionary containing the data and settings for
+        the specified scan `scannb`.
     """
+    if namespace is None:
+        namespace = {'ns': uid_scans[0].nsmap[None]}
+
     # create output dictionary
     scan_data = {}
-
-    # TODO: here should be some input checks
 
     # get correct scan
     uid_scan = uid_scans[scannb]
@@ -150,16 +197,21 @@ def _get_scan_data(uid_scans, scannb):
     # get the scan axis type
     scan_data['scanAxis'] = uid_scan.get('scanAxis')
 
+    # get dataPoint handler
+    data_points = uid_scan.find('ns:dataPoints', namespaces=namespace)
+
     # get intensities
-    scan_data['data'] = _txt_list2arr(uid_scan.findtext('dataPoints/intensities'))
-    units_intensities = uid_scan.find('dataPoints/intensities').get('unit')
+    intensities = data_points.findtext('ns:intensities', namespaces=namespace)
+
+    scan_data['data'] = _txt_list2arr(intensities)
+    units_intensities = data_points.find('ns:intensities', namespaces=namespace).get('unit')
 
     # get counting time
     scan_mode = uid_scan.get('mode')
     if scan_mode == 'Pre-set counts':
-        time = uid_scan.findtext('dataPoints/countingTimes')
+        time = data_points.findtext('ns:countingTimes', namespaces=namespace)
     else:
-        time = uid_scan.findtext('dataPoints/commonCountingTime')
+        time = data_points.findtext('ns:commonCountingTime', namespaces=namespace)
     scan_data['time'] = _txt_list2arr(time)
 
     # normalize intensity units to cps
@@ -167,25 +219,12 @@ def _get_scan_data(uid_scans, scannb):
         scan_data['data'] /= scan_data['time']
 
     # get the position of all axes
-    xpath = 'dataPoints/positions'
-    uid_pos = uid_scan.findall(xpath)
+    uid_pos = data_points.findall('ns:positions', namespaces=namespace)
     n = len(scan_data['data'])  # nb of data points
     for pos in uid_pos:
         info = _read_axis_info(pos, n)
-        if info['axis'] == '2Theta':
-            scan_data['2Theta'] = info['data']
-        elif info['axis'] == 'Omega':
-            scan_data['Omega'] = info['data']
-        elif info['axis'] == 'Phi':
-            scan_data['Phi'] = info['data']
-        elif info['axis'] == 'Psi':
-            scan_data['Psi'] = info['data']
-        elif info['axis'] == 'X':
-            scan_data['X'] = info['data']
-        elif info['axis'] == 'Y':
-            scan_data['Y'] = info['data']
-        elif info['axis'] == 'Z':
-            scan_data['Z'] = info['data']
+        if info['axis'] in ['2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
+            scan_data[info['axis']] = info['data']
         else:
             print('axis type not supported')
     return scan_data
@@ -206,38 +245,31 @@ def _read_axis_info(uid_pos, n):
     dict
         Axis settings stored in a dictionary.
     """
-    info = {'axis': uid_pos.get('axis'), 'unit': uid_pos.get('unit')}
-    unspaced = True
-    isarray = True
-    uid_child = list(uid_pos)
-    for child in uid_child:
-        if child.tag == 'listPositions':
-            info['data'] = _txt_list2arr(uid_pos.findtext('listPositions'))
-            unspaced = False
-        elif child.tag in ['startPosition', 'endPosition', 'commonPosition']:
-            if 'data' not in info.keys():
-                info['data'] = np.zeros(2)
-            if child.tag == 'startPosition':
-                info['data'][0] = np.double(uid_pos.findtext('startPosition'))
-            elif child.tag == 'endPosition':
-                info['data'][1] = np.double(uid_pos.findtext('endPosition'))
-            elif child.tag == 'commonPosition':
-                info['data'] = np.asarray(np.double(uid_pos.findtext('commonPosition')))
-                isarray = False
+    info = {'axis': uid_pos.get('axis'), 'unit': uid_pos.get('unit'), 'data': np.array([0, 0])}
+    is_array = True
+
+    for child in list(uid_pos):
+        if child.tag.find('listPositions') != -1:
+            info['data'] = _txt_list2arr(child.text)
+        elif child.tag.find('startPosition') != -1:
+            info['data'][0] = np.double(child.text)
+            is_array = False
+        elif child.tag.find('endPosition') != -1:
+            info['data'][1] = np.double(child.text)
+            is_array = False
+        elif child.tag.find('commonPosition') != -1:
+            info['data'] = np.asarray(np.double(child.text))
         else:
             logger.debug('unsupported tag')
             info['data'] = np.array([])
 
-    if unspaced and ('n' in locals()) and n and isarray:
+    if not is_array:
         info['data'] = np.linspace(info['data'][0], info['data'][1], n)
-
-    if not unspaced and ('n' in locals()) and n and len(info['data']) != n:
-        logger.debug('Different length of axis positions and data points')
     return info
 
 
 def read_xrdml(filename):
-    """Load a Panalytical XRDML file
+    """Load a Panalytical XRDML file.
 
     Parameters
     ----------
@@ -261,51 +293,46 @@ def read_xrdml(filename):
     if file_ext == '':
         filename = file_base + '.xrdml'
 
+    # check if file is conform with xml schema
+    valid = validate_xrdml_schema(filename)
+    if valid is None:
+        raise ValueError('The file is not conform with hte xrdml schema.')
+
     tree = etree.parse(os.path.join(path, filename)).getroot()
-    tree_str = etree.tostring(tree)
-    tree_str = tree_str.replace(b' xmlns=', b' xmlnamespace=')
-    xrdm = etree.XML(tree_str)
+    # define the namespace
+    namespace = {'ns': tree.nsmap[None]}
+
+    xrd_measurement = tree.find('ns:xrdMeasurement', namespaces=namespace)
 
     data = {'filename': filename,
-            'sample': xrdm.findtext('sample/id'),
-            'status': xrdm.get('status'),
+            'sample': tree.findtext('ns:sample/ns:id', namespaces=namespace),
+            'status': tree.get('status'),
             'comment': {}}
 
-    # get comment (reads ONLY the first comment, NEEDS improvement)
-    xpath = 'comment/entry'
-    try:
-        data['comment']['1'] = xrdm.findtext(xpath)
-    except:
-        data['comment']['1'] = ''
+    # get comment (reads only the first comment, needs maybe improvement)
+    lookup = tree.findtext('ns:comment/ns:entry', namespaces=namespace)
+    data['comment']['1'] = lookup if lookup else ''
 
     # get nb. of scans
-    xpath_scans = 'xrdMeasurement/scan'
-    uid_scans = xrdm.findall(xpath_scans)
+    uid_scans = xrd_measurement.findall('ns:scan', namespaces=namespace)
     nb_scans = len(uid_scans)
 
     # get (h k l) and substrate
     if nb_scans > 1:
-        xpath = 'xrdMeasurement/scan[1]/reflection'
-        data['substrate'] = xrdm.findtext(xpath + '/material')
-        data['hkl'] = {}
-        if xrdm.findall(xpath):
-            xpath_h = xpath + '/hkl/h'
-            data['hkl']['h'] = int(xrdm.findtext(xpath_h))
-            xpath_k = xpath + '/hkl/k'
-            data['hkl']['k'] = int(xrdm.findtext(xpath_k))
-            xpath_l = xpath + '/hkl/l'
-            data['hkl']['l'] = int(xrdm.findtext(xpath_l))
-        else:
-            data['hkl'] = 'not defined'
+        reflection_uid = xrd_measurement.find('ns:scan[1]/ns:reflection', namespaces=namespace)
+        data['substrate'] = reflection_uid.findtext('ns:material', namespaces=namespace)
+        data['hkl'] = {'h': None, 'k': None, 'l': None}
+        if reflection_uid is not None:
+            for hkl in 'hkl':
+                data['hkl'][hkl] = int(reflection_uid.findtext('ns:hkl/ns:{}'.format(hkl), namespaces=namespace))
 
-    xpath = 'xrdMeasurement'
     # get measurement type
-    data['measType'] = xrdm.find(xpath).get('measurementType')
+    data['measType'] = xrd_measurement.get('measurementType')
 
     # if not a simple scan and not the 'Repeated scan' than get
     # the step axis type
     if data['measType'] not in ['Scan', 'Repeated scan']:
-        data['stepAxis'] = xrdm.find(xpath).get('measurementStepAxis')
+        data['stepAxis'] = xrd_measurement.get('measurementStepAxis')
 
     # get the scan axis type
     if nb_scans > 0:
@@ -317,7 +344,7 @@ def read_xrdml(filename):
         data[key] = []
 
     for k in range(nb_scans):
-        scan = _get_scan_data(uid_scans, k)
+        scan = _get_scan_data(uid_scans, k, namespace=namespace)
         if scan:
             if data['measType'] == 'Scan' or scan['status'] == 'Completed':
                 data['scannb'].append(k)
@@ -352,37 +379,11 @@ def read_xrdml(filename):
                 data[key] = data[ikey]
                 data[ikey] = []
 
-                #        data['scannb'] = data['iscannb']
-                #        data['iscannb'] = []
-                #        data['data'] = data['idata']
-                #        data['idata'] = []
-                #        data['time'] = data['itime']
-                #        data['itime'] = []
-                #        data['2Theta'] = data['i2Theta']
-                #        data['i2Theta'] = []
-                #        data['Omega'] = data['iOmega']
-                #        data['iOmega'] = []
-                #        if 'iPhi' in data.keys() and data['iPhi']:
-                #            data['Phi'] = data['iPhi']
-                #            data['iPhi'] = []
-                #        if 'iPsi' in data.keys() and data['iPsi']:
-                #            data['Psi'] = data['iPsi']
-                #            data['iPsi'] = []
-                #        if 'iX' in data.keys() and data['iX']:
-                #            data['X'] = data['iX']
-                #            data['iX'] = []
-                #        if 'iY' in data.keys() and data['iY']:
-                #            data['Y'] = data['iY']
-                #            data['iY'] = []
-                #        if 'iZ' in data.keys() and data['iZ']:
-                #            data['Z'] = data['iZ']
-                #            data['iZ'] = []
-
     # remove redundant information
     [data.pop(key) for key in ['Phi', 'Psi', 'X', 'Y', 'Z'] if data[key] == []]
-    if data['iscannb'] == []:
-        [data.pop(key) for key in ['iscannb', 'idata', 'itime', 'i2Theta', 'iOmega',
-                                   'iPhi', 'iPsi', 'iX', 'iY', 'iZ']]
+    if len(data['iscannb']) == 0:
+        for key in ['iscannb', 'idata', 'itime', 'i2Theta', 'iOmega', 'iPhi', 'iPsi', 'iX', 'iY', 'iZ']:
+            data.pop(key)
 
     data = _get_array_for_single_value(data, 'time')
 
@@ -410,13 +411,12 @@ def read_xrdml(filename):
         data.pop('scannb')
 
     # get wavelength
-    xpath = 'xrdMeasurement/usedWavelength'
-    uid = xrdm.find(xpath)
+    uid = xrd_measurement.find('ns:usedWavelength', namespaces=namespace)
     data['kType'] = uid.get('intended')
-    data['kAlpha1'] = np.double(xrdm.findtext(xpath + '/kAlpha1'))
-    data['kAlpha2'] = np.double(xrdm.findtext(xpath + '/kAlpha2'))
-    data['kBeta'] = np.double(xrdm.findtext(xpath + '/kBeta'))
-    data['kAlphaRatio'] = np.double(xrdm.findtext(xpath + '/ratioKAlpha2KAlpha1'))
+    data['kAlpha1'] = np.double(uid.findtext('ns:kAlpha1', namespaces=namespace))
+    data['kAlpha2'] = np.double(uid.findtext('ns:kAlpha2', namespaces=namespace))
+    data['kBeta'] = np.double(uid.findtext('ns:kBeta', namespaces=namespace))
+    data['kAlphaRatio'] = np.double(uid.findtext('ns:ratioKAlpha2KAlpha1', namespaces=namespace))
     if data['kType'] == 'K-Alpha 1':
         data['Lambda'] = data['kAlpha1']
     elif data['kType'] == 'K-Alpha':
@@ -426,75 +426,48 @@ def read_xrdml(filename):
         print('usedWavelength type is not supported (using K-Alpha 1')
         data['Lambda'] = data['kAlpha1']
 
-    # get some usefull information (x/y-label, x/y-units)
+    # get some useful information (x/y-label, x/y-units)
     if nb_scans > 0:
         if 'scanAxis' in data.keys():
             if data['scanAxis'] == 'Gonio':
-                axisType = '2Theta'
                 data['xlabel'] = '2Theta-Theta'
                 if data['measType'] in ['Scan', 'Repeated scan']:
                     data['x'] = data['2Theta']
             elif data['scanAxis'] in ['2Theta', '2Theta-Omega']:
-                axisType = '2Theta'
                 data['xlabel'] = data['scanAxis']
                 if data['measType'] in ['Scan', 'Repeated scan']:
                     data['x'] = data['2Theta']
             elif data['scanAxis'] in ['Omega', 'Omega-2Theta']:
-                axisType = 'Omega'
                 data['xlabel'] = data['scanAxis']
                 if data['measType'] in ['Scan', 'Repeated scan']:
                     data['x'] = data['Omega']
             elif data['scanAxis'] == 'Reciprocal Space':
-                axisType = 'Omega'
                 data['xlabel'] = 'Omega'
                 if data['measType'] in ['Scan', 'Repeated scan']:
                     data['x'] = data['Omega']
             elif data['scanAxis'] in ['Phi', 'Psi', 'X', 'Y', 'Z']:
-                axisType = data['scanAxis']
                 data['xlable'] = data['scanAxis']
                 if data['measType'] == 'Scan':
                     data['x'] = data[data['scanAxis']]
             else:
                 logger.debug('The scanAxis type is not supported')
-                axisType = 'unknown'
                 data['xlabel'] = 'unknown'
 
-            xpath = 'xrdMeasurement/scan[1]/dataPoints/positions'
-            uid = xrdm.find(xpath)
-            for pos in uid:
-                if pos.get('axis') == axisType:
-                    data['xunit'] = pos.get('unit')
-                    break
-            if 'xunit' not in data.keys():
-                data['xunit'] = 'nd'
+            uid = xrd_measurement.find('ns:scan[1]/ns:dataPoints/ns:positions', namespaces=namespace)
+            data['xunit'] = uid.get('unit', 'nd')
 
         if 'stepAxis' in data.keys():
-            if data['stepAxis'] == 'Gonio':
-                axisType = '2Theta'
+            if data['stepAxis'] in ['2Theta', '2Theta-Omega', 'Omega', 'Omega-2Theta', 'Phi', 'Psi', 'X', 'Y', 'Z']:
+                data['ylabel'] = data['stepAxis']
+            elif data['stepAxis'] == 'Gonio':
                 data['ylabel'] = '2Theta-Theta'
-            elif data['stepAxis'] in ['2Theta', '2Theta-Omega']:
-                axisType = '2Theta'
-                data['ylabel'] = data['stepAxis']
-            elif data['stepAxis'] in ['Omega', 'Omega-2Theta']:
-                axisType = 'Omega'
-                data['ylabel'] = data['stepAxis']
-            elif data['stepAxis'] in ['Phi', 'Psi', 'X', 'Y', 'Z']:
-                axisType = data['stepAxis']
-                data['ylabel'] = data['stepAxis']
             else:
                 print('scanAxis type not supported')
-                axisType = 'unknown'
                 data['ylabel'] = 'unknown'
 
             # TODO: maybe optimization possible, load units before
-            xpath = 'xrdMeasurement/scan[1]/dataPoints/positions'
-            uid = xrdm.find(xpath)
-            for pos in uid:
-                if pos.get('axis') == axisType:
-                    data['yunit'] = pos.get('unit')
-                    break
-            if 'yunit' not in data.keys():
-                data['yunit'] = 'nd'
+            uid = xrd_measurement.find('ns:scan[1]/ns:dataPoints/ns:positions', namespaces=namespace)
+            data['yunit'] = uid.get('unit', 'nd')
 
     if data['measType'] == 'Area measurement':
         dim_2t = data['2Theta'].shape
@@ -507,25 +480,25 @@ def read_xrdml(filename):
             logger.debug('Omega array was corrected to match "2Theta" and "data" arrays')
 
     # Mask Width [OPTIONAL]
-    xpath = 'xrdMeasurement/incidentBeamPath/mask/width'
-    uid = xrdm.find(xpath)
+    xpath = 'ns:incidentBeamPath/ns:mask/ns:width'
+    uid = xrd_measurement.find(xpath, namespaces=namespace)
     if uid is not None:
         unit = uid.get('unit')
         if unit != 'mm':
-            logger.debug('Mask width units are not \'mm\'')
-        data['maskWidth'] = np.double(xrdm.findtext(xpath))
+            logger.debug("Mask width units are not 'mm'")
+        data['maskWidth'] = np.double(tree.findtext(xpath, namespaces=namespace))
 
     # Divergence slit Height [OPTIONAL]
-    xpath = 'xrdMeasurement/incidentBeamPath/divergenceSlit/height'
-    uid = xrdm.find(xpath)
+    xpath = 'ns:incidentBeamPath/ns:divergenceSlit/ns:height'
+    uid = xrd_measurement.find(xpath, namespaces=namespace)
     if uid is not None:
         unit = uid.get('unit')
         if unit != 'mm':
-            logger.debug('Divergence slit height units are not \'mm\'')
-        data['slitHeight'] = np.double(xrdm.findtext(xpath))
+            logger.debug("Divergence slit height units are not 'mm'")
+        data['slitHeight'] = np.double(xrd_measurement.findtext(xpath, namespaces=namespace))
 
     return data
 
 
 if __name__ == '__main__':
-    data = read_file('test.xrdml')
+    data = read_xrdml('test_area.xrdml')

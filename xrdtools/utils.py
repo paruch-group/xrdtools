@@ -1,6 +1,6 @@
-import numpy as np
+from __future__ import unicode_literals, print_function, division, absolute_import
 
-from xrdtools.decorators import deprecated
+import numpy as np
 
 
 def get_qmap(data, omega_offset=0):
@@ -21,28 +21,6 @@ def get_qmap(data, omega_offset=0):
     om = data['Omega'] + omega_offset
     lambd = data['Lambda']
     return angle2qvector(data['2Theta'], om, lambd)
-
-
-# for backward compatibility
-@deprecated(get_qmap)
-def qmap(data, omega_offset=0):
-    """Function to calculate kpar, kperp.
-
-    Deprecated in 0.0.5
-
-    Parameters
-    ----------
-    data : dict
-        A xrdml data dictionary.
-    omega_offset : float
-        Offset for the omega angle.
-
-    Returns
-    -------
-    kpar : ndarray
-    kperp : ndarray
-    """
-    return get_qmap(data, omega_offset)
 
 
 def angle2qvector(tt, om, lam=1.54):
@@ -80,33 +58,6 @@ def angle2qvector(tt, om, lam=1.54):
     return kpar, kperp
 
 
-# for backward compatibility
-@deprecated(angle2qvector)
-def transfrom_angle2qvector(tt, om, lam=1.54):
-    """Convert angles to q vector.
-
-    Calculate the q-vector from the 2theta `tt` and omega `om` angle and
-    the x-ray wavelength lambda `lam`.
-
-    Deprecated in 0.0.5
-
-    Parameters
-    ----------
-    tt : array-like
-        Array containing the 2Theta values.
-    om : array-like
-        Array containing the Omega values.
-    lam : float
-        The wavelength lambda in Angstrom [Default: 1.54].
-
-    Returns
-    -------
-    kpar : ndarray
-    kperp : ndarray
-    """
-    return angle2qvector(tt, om, lam)
-
-
 def q2hkl_map(x, y, lattice_params=(3.905, 3.905, 3.905), hkl=None):
     """Compute the hk coordinates for a given q vector.
 
@@ -131,30 +82,6 @@ def q2hkl_map(x, y, lattice_params=(3.905, 3.905, 3.905), hkl=None):
     x /= np.sqrt((hkl['h']/a)**2+(hkl['k']/b)**2)
     y *= c
     return x, y
-
-
-# for backward compatibility
-@deprecated(q2hkl_map)
-def q2hklmap(x, y, lattice_params=(3.905, 3.905, 3.905), hkl=None):
-    """Compute the hk coordinates for a given q vector.
-
-    Deprecated in 0.0.5
-
-    Parameters
-    ----------
-    x : ndarray
-    y : ndarray
-    lattice_params : tuple
-        A tuple of three floats for the lattice parameter.
-    hkl : dict
-        A dictionary containing the hkl values. Defaults to 001 if not given [Default: None].
-
-    Returns
-    -------
-    x : ndarray
-    y : ndarray
-    """
-    return q2hkl_map(x, y, lattice_params, hkl)
 
 
 def angles(hkl, lam=1.54, lattice_param=(3.905, 3.905, 3.905)):

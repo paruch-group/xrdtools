@@ -9,10 +9,12 @@ Welcome to xrdtools's documentation!
 The **xrdtools** is a package intended to load *.xrdml* files created by
 Panalytical XPert XRD machines. No full feature support is guaranteed at the current state.
 
-Getting started
----------------
+
+Table of Content
+----------------
 
 .. toctree::
+    :maxdepth: 2
 
     install
     tutorial
