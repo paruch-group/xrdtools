@@ -19,7 +19,7 @@ class TestXrdmlRead(unittest.TestCase):
 
         data = read_xrdml(filename)
 
-        self.assertEqual(data['comment'], {u'1': u''})
+        self.assertEqual(data['comment'], {'1': ''})
         self.assertEqual(data['kAlpha1'], 1.540598)
         self.assertEqual(data['kAlpha2'], 1.544426)
         self.assertEqual(data['kBeta'], 1.39225)
