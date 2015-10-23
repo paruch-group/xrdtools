@@ -8,7 +8,8 @@ import xrdtools
 
 
 def xrdml():
-    """Commandline tool to export measurement data from xrdml files."""
+    """Command line tool to export measurement data from xrdml files.
+    """
 
     parser = ArgumentParser('Export measurement data for xrdml files.')
     parser.add_argument('filenames', metavar='filenames', type=str, nargs='+',
