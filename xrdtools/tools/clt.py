@@ -19,6 +19,9 @@ def xrdml():
                         help='the format to which the data should be exported')
     parser.add_argument('--delimiter', metavar='delimiter', type=str, default='\t',
                         help='define a delimiter')
+    parser.add_argument('--fmt', metavar='fmt', type=str, default='%.18e',
+                        help='define the output format')
+
 
     args = parser.parse_args()
 
@@ -46,4 +49,8 @@ def xrdml():
             file_out = sys.stdout
 
         delimiter = args.delimiter.decode('string-escape')
-        np.savetxt(file_out, output.T, delimiter=delimiter, header=delimiter.join(labels))
+        fmt = args.fmt
+        np.savetxt(file_out, output.T,
+                   fmt=fmt,
+                   delimiter=delimiter,
+                   header=delimiter.join(labels))

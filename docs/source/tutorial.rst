@@ -65,4 +65,13 @@ The type of delimiter can be changed with the ``--delimiter`` keyword argument:
     1.501869158878504606e+01,5.999999999999999778e-01
     ...
 
+The output format can be changed with the ``--fmt`` keyword argument:
 
+.. code-block:: bash
+
+    $ xrdml my_xrdml_file.xrdml -o stdout --fmt='%.2f'
+
+    # 2Theta-Omega  Intensity
+    15.00   0.90
+    15.02   0.60
+    ...
