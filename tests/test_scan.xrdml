@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xrdMeasurements xmlns="http://www.xrdml.com/XRDMeasurement/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.xrdml.com/XRDMeasurement/1.0 http://www.xrdml.com/XRDMeasurement/1.0/XRDMeasurement.xsd" status="Completed">
+	<sample type="To be analyzed">
+		<id>B10135</id>
+	</sample>
+	<xrdMeasurement measurementType="Scan" status="Completed">
+		<comment>
+			<entry/>
+		</comment>
+		<usedWavelength intended="K-Alpha 1">
+			<kAlpha1 unit="Angstrom">1.5405980</kAlpha1>
+			<kAlpha2 unit="Angstrom">1.5444260</kAlpha2>
+			<kBeta unit="Angstrom">1.3922500</kBeta>
+			<ratioKAlpha2KAlpha1>0.0000</ratioKAlpha2KAlpha1>
+		</usedWavelength>
+		<incidentBeamPath>
+			<radius unit="mm">320.00</radius>
+			<xRayTube id="1010048" name="PW3373/10 Cu LFF DK174299">
+				<tension unit="kV">45</tension>
+				<current unit="mA">40</current>
+				<anodeMaterial>Cu</anodeMaterial>
+				<focus type="Line">
+					<length unit="mm">12.0</length>
+					<width unit="mm">0.4</width>
+					<takeOffAngle unit="deg">3.3</takeOffAngle>
+				</focus>
+			</xRayTube>
+			<xRayMirror id="27010001" name="Inc. X-ray mirror Cu (MRD)" hybrid="false">
+				<crystal type="Graded" shape="Parabolic">W/Si</crystal>
+				<acceptanceAngle unit="deg">0.8</acceptanceAngle>
+				<length unit="mm">60.0</length>
+			</xRayMirror>
+			<monochromator id="23010011" name="4xGe220 Asymmetric" hybrid="false">
+				<crystal type="Asymmetric" shape="Flat">Ge</crystal>
+				<numberOfReflections>4</numberOfReflections>
+				<hkl>
+					<h>2</h>
+					<k>2</k>
+					<l>0</l>
+				</hkl>
+			</monochromator>
+			<divergenceSlit id="22010007" name="Slit Fixed 1/8°" xsi:type="fixedDivergenceSlitType">
+				<height unit="mm">0.19</height>
+			</divergenceSlit>
+			<beamAttenuator id="26010001" name="Ni 0.125 mm automatic" xsi:type="intensitySwitchedBeamAttenuatorType">
+				<factor>149.50</factor>
+				<material>Ni</material>
+				<activateLevel unit="counts per second">500000</activateLevel>
+				<deactivateLevel unit="counts per second">400000</deactivateLevel>
+			</beamAttenuator>
+		</incidentBeamPath>
+		<diffractedBeamPath>
+			<radius unit="mm">320.00</radius>
+			<antiScatterSlit id="22060009" name="Prog. AS Slit" xsi:type="fixedAntiScatterSlitType">
+				<height unit="mm">0.80</height>
+			</antiScatterSlit>
+			<receivingSlit id="22020009" name="Prog. Rec. Slit">
+				<height unit="mm">0.80</height>
+			</receivingSlit>
+			<detector id="7010011" name="PW3011/20 (Miniprop. large window)" xsi:type="pointDetectorType">
+				<phd>
+					<lowerLevel unit="%">35.0</lowerLevel>
+					<upperLevel unit="%">80.0</upperLevel>
+				</phd>
+			</detector>
+		</diffractedBeamPath>
+		<scan appendNumber="0" mode="Continuous" scanAxis="2Theta-Omega" status="Completed">
+			<header>
+				<startTimeStamp>2010-10-01T15:02:15+02:00</startTimeStamp>
+				<endTimeStamp>2010-10-01T17:07:50+02:00</endTimeStamp>
+				<author>
+					<name>Mesures</name>
+				</author>
+				<source>
+					<applicationSoftware version="2.0e">X'Pert Data Collector</applicationSoftware>
+					<instrumentControlSoftware version="1.5 ">XPERT-PRO</instrumentControlSoftware>
+					<instrumentID>0000000098722659</instrumentID>
+				</source>
+			</header>
+			<dataPoints>
+				<positions axis="2Theta" unit="deg">
+					<startPosition>15.0100</startPosition>
+					<endPosition>29.9900</endPosition>
+				</positions>
+				<positions axis="Omega" unit="deg">
+					<startPosition>8.1243</startPosition>
+					<endPosition>15.6143</endPosition>
+				</positions>
+				<positions axis="Phi" unit="deg">
+					<commonPosition>0.00</commonPosition>
+				</positions>
+				<positions axis="Psi" unit="deg">
+					<commonPosition>-0.60</commonPosition>
+				</positions>
+				<positions axis="X" unit="mm">
+					<commonPosition>1.17</commonPosition>
+				</positions>
+				<positions axis="Y" unit="mm">
+					<commonPosition>0.26</commonPosition>
+				</positions>
+				<positions axis="Z" unit="mm">
+					<commonPosition>9.607</commonPosition>
+				</positions>
+				<beamAttenuationFactors>1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00</beamAttenuationFactors>
+				<commonCountingTime unit="seconds">10.00</commonCountingTime>
+				<intensities unit="counts">9 6 6 6 5 9 14 6 5 14 5 8 8 5 8 3 10 12 12 3 8 7 8 8 5 6 9 10 8 11 5 6 3 5 3 8 9 8 5 6 11 10 4 4 4 3 5 7 7 11 8 7 11 3 14 11 1 8 9 7 5 12 6 7 10 15 9 9 13 10 13 14 5 6 17 9 9 10 8 7 9 8 9 4 12 11 8 3 10 4 9 3 10 12 8 9 7 2 10 6 5 7 10 10 7 7 8 11 9 10 12 9 11 2 10 5 12 6 7 6 10 4 8 13 6 4 7 11 13 13 9 11 8 7 9 11 15 17 15 13 17 14 19 10 15 15 16 15 20 8 5 8 7 11 13 6 12 7 6 8 7 7 6 11 6 11 9 11 11 14 13 7 12 9 21 11 9 5 8 10 12 13 14 11 9 10 18 10 8 7 8 13 10 11 10 10 16 8 8 13 14 14 10 13 10 12 9 13 11 16 19 11 13 8 17 25 41 41 52 117 163 213 261 281 271 217 177 161 100 72 54 45 31 24 18 15 19 20 17 20 20 9 11 16 15 8 15 11 12 17 20 12 11 13 14 9 11 9 16 11 17 11 12 15 16 21 15 17 21 17 11 15 25 9 17 18 13 16 14 20 14 20 14 15 18 17 15 15 19 24 22 16 21 42 48 49 86 210 591 1290 1991 2631 2803 2289 1536 881 519 348 298 237 191 148 170 157 145 128 126 131 117 116 125 138 131 115 96 124 172 145 78 130 171 201 180 112 138 233 218 140 135 208 287 199 136 156 305 337 215 137 235 421 391 224 207 402 563 481 251 347 710 800 608 349 662 1133 1255 932 911 1606 2586 3147 2940 2016 4524 37139 948716 1585904 209762 228729 263982 251430 191826 112677 48002 13901 5878 7422 7429 4093 1271 960 1633 1666 1039 476 545 731 691 440 316 340 360 371 277 235 218 240 212 182 153 154 150 186 136 104 90 126 119 101 83 76 116 114 77 57 58 98 106 65 44 37 105 76 37 44 63 78 68 48 41 83 80 62 43 69 79 66 54 41 84 120 127 70 96 231 394 607 743 738 578 476 324 158 80 47 33 27 20 27 26 25 19 25 28 17 15 21 19 19 21 16 18 17 20 22 21 17 19 11 15 15 17 19 16 17 12 16 15 15 12 6 7 14 16 6 12 16 18 13 13 22 14 11 7 14 12 20 12 11 17 11 7 11 10 21 13 17 19 21 29 43 38 80 91 120 157 180 180 154 136 86 61 42 24 20 13 13 15 16 14 10 8 15 9 8 12 8 10 11 7 11 6 5 6 7 11 9 12 9 6 10 9 13 4 9 7 7 7 8 11 12 11 16 5 12 13 12 10 13 8 10 15 7 8 7 5 6 10 10 7 5 14 11 6 8 17 16 12 13 13 17 9 15 21 26 11 18 19 20 19 13 11 11 12 8 10 9 7 11 13 12 5 10 7 5 13 4 7 4 5 6 9 6 12 8 8 4 10 7 4 9 7 7 7 7 8 8 11 11 8 9 7 11 6 9 17 8 15 9 7 7 7 11 8 5 5 7 8 10 9 13 10 16 8 7 11 6 10 8 9 3 10 5 9 5 9 11 7 8 10 11 14 6 7 5 7 10 8 12 6 5 8 17 6 9 6 9 7 6 4 6 8 9 14 7 6 7 11 9 13 6 11 9 12 12 12 12 12 7 8 13 11 9 11 5 19 8 5 14 8 13</intensities>
+			</dataPoints>
+		</scan>
+	</xrdMeasurement>
+</xrdMeasurements>
