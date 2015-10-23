@@ -22,7 +22,6 @@ def xrdml():
     parser.add_argument('--fmt', metavar='fmt', type=str, default='%.18e',
                         help='define the output format')
 
-
     args = parser.parse_args()
 
     for filename in args.filenames:

@@ -6,16 +6,10 @@ from setuptools import setup
 from xrdtools import __version__, __name__ as package_name
 
 
-def get_schema_data():
-    package_path = os.path.dirname(__file__)
-    return glob(os.path.join(package_path, 'data/schema/XRDMeasurement*.xsd'))
-
 requires = [
     'lxml>=3.0',
     'numpy>=1.7',
 ]
-
-SCHEMAS = get_schema_data()
 
 setup(
     name=package_name,
