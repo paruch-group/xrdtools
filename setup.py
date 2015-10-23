@@ -20,14 +20,17 @@ SCHEMAS = get_schema_data()
 setup(
     name=package_name,
     version=__version__,
+    packages=['xrdtools', 'xrdtools.tools'],
     description='A library to read .xrdml files',
-    packages=['xrdtools'],
+    author='Benedikt Ziegler',
+    author_email='benediktziegler@gmail.com',
     include_package_data=True,
     package_data={
         'xrdtools': ['data/schemas/*.xsd'],
     },
-    author='Benedikt Ziegler',
-    author_email='benediktziegler@gmail.com',
+    entry_points={
+        'console_scripts': ['xrdml = xrdtools.tools.clt:xrdml']
+    },
     url='https://github.com/paruch-group/xrdtools',
     keywords=['xrdml', 'read'],
     license='MIT',
