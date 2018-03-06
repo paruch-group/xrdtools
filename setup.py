@@ -1,9 +1,23 @@
 # -*- coding: utf-8 -*-
-from glob import glob
 import os
+import io
+import re
 from setuptools import setup
 
-from xrdtools import __version__, __name__ as package_name
+
+def read(*parts):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with io.open(os.path.join(here, *parts), 'r') as fp:
+        return fp.read()
+
+
+def find_version(*file_paths):
+    version_file = read(*file_paths)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                              version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
 
 
 requires = [
@@ -12,8 +26,8 @@ requires = [
 ]
 
 setup(
-    name=package_name,
-    version=__version__,
+    name='xrdtools',
+    version=find_version('xrdtools', '__init__.py'),
     packages=['xrdtools', 'xrdtools.tools'],
     description='A library to read .xrdml files',
     author='Benedikt Ziegler',
@@ -40,10 +54,8 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Scientific/Engineering :: Physics',
     ],
     install_requires=requires,
