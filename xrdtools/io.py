@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division, absolute_import
 
 import os
+import io
 import logging
 
 from lxml import etree
@@ -12,7 +13,8 @@ package_path = os.path.dirname(__file__)
 
 
 def validate_xrdml_schema(filename):
-    """Validate the xml schema of a given file.
+    """
+    Validate the xml schema of a given file.
 
     Parameters
     ----------
@@ -39,7 +41,7 @@ def validate_xrdml_schema(filename):
         data_xml = etree.parse(f)
 
     for version, schema in schemas:
-        with open(schema, 'r') as f:
+        with io.open(schema, 'r', encoding='utf8') as f:
             xmlschema_doc = etree.parse(f)
             xmlschema = etree.XMLSchema(xmlschema_doc)
 
@@ -50,7 +52,8 @@ def validate_xrdml_schema(filename):
 
 
 def _txt_list2arr(txt):
-    """Split a list of numbers `txt` into a numpy ndarray.
+    """
+    Split a list of numbers `txt` into a numpy ndarray.
 
     Parameters
     ----------
@@ -68,7 +71,8 @@ def _txt_list2arr(txt):
 
 
 def _get_array_for_single_value(data, key):
-    """Create an array for a given `key` of the length of the data array.
+    """
+    Create an array for a given `key` of the length of the data array.
 
     Parameters
     ----------
@@ -93,7 +97,8 @@ def _get_array_for_single_value(data, key):
 
 
 def _sort_data(k, uid_scans, data):
-    """Retrieve settings of scan `k` and append to data.
+    """
+    Retrieve settings of scan `k` and append to data.
 
     Parameters
     ----------
@@ -116,8 +121,9 @@ def _sort_data(k, uid_scans, data):
         if data['measType'] == 'Scan' or scan['status'] == 'Completed':
             data['scannb'].append(k)
             for key in ['data', 'time', '2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
-                data = _append2arr(data, scan, key)
-        # append data to the incompleted data keys
+                if key in scan:
+                    data = _append2arr(data, scan, key)
+        # append data to the incomplete data keys
         # TODO: check if the following code actually works?!
         else:
             data['iscannb'].append(k)
@@ -139,7 +145,8 @@ def _sort_data(k, uid_scans, data):
 
 
 def _append2arr(data, scan, key):
-    """Append the data with key `key` from scan `scan` to the data dictionary.
+    """
+    Append the data with key `key` from scan `scan` to the data dictionary.
 
     Parameters
     ----------
@@ -163,7 +170,8 @@ def _append2arr(data, scan, key):
 
 
 def _get_scan_data(uid_scans, scannb, namespace=None):
-    """Get the data of scan with number `scannb`.
+    """
+    Get the data of scan with number `scannb`.
 
     Parameters
     ----------
@@ -231,7 +239,8 @@ def _get_scan_data(uid_scans, scannb, namespace=None):
 
 
 def _read_axis_info(uid_pos, n):
-    """Get the settings for a given axis.
+    """
+    Get the settings for a given axis.
 
     Parameters
     ----------
@@ -269,7 +278,8 @@ def _read_axis_info(uid_pos, n):
 
 
 def read_xrdml(filename):
-    """Load a Panalytical XRDML file.
+    """
+    Load a Panalytical XRDML file.
 
     Parameters
     ----------
@@ -320,11 +330,13 @@ def read_xrdml(filename):
     # get (h k l) and substrate
     if nb_scans > 1:
         reflection_uid = xrd_measurement.find('ns:scan[1]/ns:reflection', namespaces=namespace)
-        data['substrate'] = reflection_uid.findtext('ns:material', namespaces=namespace)
         data['hkl'] = {'h': None, 'k': None, 'l': None}
         if reflection_uid is not None:
+            data['substrate'] = reflection_uid.findtext('ns:material', namespaces=namespace)
             for hkl in 'hkl':
                 data['hkl'][hkl] = int(reflection_uid.findtext('ns:hkl/ns:{}'.format(hkl), namespaces=namespace))
+        else:
+            data['substrate'] = ''
 
     # get measurement type
     data['measType'] = xrd_measurement.get('measurementType')
@@ -349,7 +361,8 @@ def read_xrdml(filename):
             if data['measType'] == 'Scan' or scan['status'] == 'Completed':
                 data['scannb'].append(k)
                 for key in ['data', 'time', '2Theta', 'Omega', 'Phi', 'Psi', 'X', 'Y', 'Z']:
-                    data = _append2arr(data, scan, key)
+                    if key in scan:
+                        data = _append2arr(data, scan, key)
             # TODO: check if this code actually works?!
             else:
                 data['iscannb'].append(k)
