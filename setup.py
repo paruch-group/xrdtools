@@ -25,11 +25,18 @@ requires = [
     'numpy>=1.7',
 ]
 
+
+with open('README.md') as f:
+    long_description = f.read()
+
+
 setup(
     name='xrdtools',
     version=find_version('xrdtools', '__init__.py'),
     packages=['xrdtools', 'xrdtools.tools'],
     description='A library to read .xrdml files',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author='Benedikt Ziegler',
     author_email='benediktziegler@gmail.com',
     include_package_data=True,
