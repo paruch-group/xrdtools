@@ -50,7 +50,7 @@ def angle2qvector(tt, om, lam=1.54):
 
     # calculate kpar, kperp
     delta = t_rad - om_rad
-    delta_k = 2./lam * np.sin(t_rad)
+    delta_k = 2. / lam * np.sin(t_rad)
 
     kperp = delta_k * np.cos(delta)
     kpar = delta_k * np.sin(delta)
@@ -79,7 +79,7 @@ def q2hkl_map(x, y, lattice_params=(3.905, 3.905, 3.905), hkl=None):
         hkl = {'h': 0, 'k': 0, 'l': 1}
     a, b, c = lattice_params
 
-    x /= np.sqrt((hkl['h']/a)**2+(hkl['k']/b)**2)
+    x /= np.sqrt((hkl['h'] / a) ** 2 + (hkl['k'] / b) ** 2)
     y *= c
     return x, y
 
@@ -96,7 +96,7 @@ def angles(hkl, lam=1.54, lattice_param=(3.905, 3.905, 3.905)):
         A dictionary containing the hkl values.
     lam : float
         The wavelength lambda in Angstrom. Defaults to 1.54.
-    lattice_params : tuple
+    lattice_param : tuple
         A tuple of three floats for the lattice parameter.
 
     Returns
@@ -110,15 +110,15 @@ def angles(hkl, lam=1.54, lattice_param=(3.905, 3.905, 3.905)):
 
     h = hkl['h']
     k = hkl['k']
-    l = hkl['l']
+    l_ = hkl['l']
 
     # calculation
-    d_hkl = 1/np.sqrt((h/a0)**2 + (k/a1)**2 + (l/a2)**2)
+    d_hkl = 1 / np.sqrt((h / a0) ** 2 + (k / a1) ** 2 + (l_ / a2) ** 2)
 
-    theta = np.degrees(np.arcsin(lam/(2*d_hkl)))
-    offset_oop = np.degrees(np.arctan(1/np.sqrt((l/a2)**2)/(1/np.sqrt((h/a0)**2 + (k/a1)**2))))
+    theta = np.degrees(np.arcsin(lam / (2 * d_hkl)))
+    offset_oop = np.degrees(np.arctan(1 / np.sqrt((l_ / a2) ** 2) / (1 / np.sqrt((h / a0) ** 2 + (k / a1) ** 2))))
 
-    tt = 2*theta
+    tt = 2 * theta
     omega = theta - offset_oop
     delta = offset_oop
 
